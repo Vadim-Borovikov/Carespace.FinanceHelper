@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CarespaceFinanceHelper.Dto.Digiseller;
+using CarespaceFinanceHelper.Dto.SelfWork;
 
 namespace CarespaceFinanceHelper
 {
     public static class DataManager
     {
-        public static IList<T> GetValues<T>(GoogleSheetsProvider provider, string range) where T : ILoadable, new()
+        public static IList<T> ReadValues<T>(GoogleSheetsProvider provider, string range) where T : ILoadable, new()
         {
             IEnumerable<IList<object>> values = provider.GetValues(range, true);
             return values?.Select(LoadValues<T>).ToList();
         }
 
-        public static void AppendValues<T>(GoogleSheetsProvider provider, string range, IEnumerable<T> values,
+        public static void WriteValues<T>(GoogleSheetsProvider provider, string range, IEnumerable<T> values,
             bool overwrite = false)
             where T : ISavable
         {
@@ -25,6 +27,38 @@ namespace CarespaceFinanceHelper
             {
                 provider.AppentValues(range, table);
             }
+        }
+
+        public static string GetDigisellerProductName(string url, string urlPrefix)
+        {
+            int id = int.Parse(url.Replace(urlPrefix, ""));
+            ProductResult info = DigisellerProvider.GetProductsInfo(id);
+            return info.Info.Name;
+        }
+
+        public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
+            string appVersion, string refreshToken)
+        {
+            TokenResult result =
+                SelfWorkProvider.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
+            return result.Token;
+        }
+
+        public static string RegisterTax(string name, decimal amount, DateTime date, string incomeType,
+            string paymentType, string token, string taxReceiptUrlFormat)
+        {
+            var service = new IncomeRequest.Service
+            {
+                Amount = amount,
+                Name = name,
+                Quantity = 1
+            };
+            var services = new List<IncomeRequest.Service> { service };
+
+            IncomeResult result =
+                SelfWorkProvider.PostIncome(incomeType, date, DateTime.Now, services, amount, paymentType, token);
+            string id = result.ApprovedReceiptUuid;
+            return string.Format(taxReceiptUrlFormat, id);
         }
 
         private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()

@@ -5,46 +5,46 @@ namespace CarespaceFinanceHelper
 {
     public sealed class Transaction : ILoadable, ISavable
     {
-        private string _name;
-        private DateTime _date;
+        public string Name;
+        public DateTime Date;
         private decimal _amount;
-        private decimal? _price;
-        private string _digisellerProductUrl;
-        private string _taxReceiptUrl;
+        public decimal? Price;
+        public string DigisellerProductUrl;
+        public string TaxReceiptUrl;
 
         public void Load(IList<object> values)
         {
-            _name = values.ToString(0);
+            Name = values.ToString(0);
 
             DateTime? date = values.ToDateTime(1);
             if (!date.HasValue)
             {
-                throw new ArgumentNullException($"Empty date in \"{_name}\"");
+                throw new ArgumentNullException($"Empty date in \"{Name}\"");
             }
-            _date = date.Value;
+            Date = date.Value;
 
             decimal? amount = values.ToDecimal(2);
             if (!amount.HasValue)
             {
-                throw new ArgumentNullException($"Empty amount in \"{_name}\"");
+                throw new ArgumentNullException($"Empty amount in \"{Name}\"");
             }
             _amount = amount.Value;
 
-            _price = values.ToDecimal(3);
-            _digisellerProductUrl = values.ToString(4);
-            _taxReceiptUrl = values.ToString(5);
+            Price = values.ToDecimal(3);
+            DigisellerProductUrl = values.ToString(4);
+            TaxReceiptUrl = values.ToString(5);
         }
 
         public IList<object> Save()
         {
             return new List<object>
             {
-                _name,
-                $"{_date:d MMMM yyyy}",
+                Name,
+                $"{Date:d MMMM yyyy}",
                 $"{_amount}",
-                $"{_price}",
-                $"{_digisellerProductUrl}",
-                $"{_taxReceiptUrl}"
+                $"{Price}",
+                $"{DigisellerProductUrl}",
+                $"{TaxReceiptUrl}"
             };
         }
     }

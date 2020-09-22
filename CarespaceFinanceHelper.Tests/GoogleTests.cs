@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CarespaceFinanceHelper.Tests
 {
     [TestClass]
-    public sealed class GoogleSheetsTests
+    public sealed class GoogleTests
     {
         [TestMethod]
         public void TestGoogleSheetsProvider()
         {
-            Configuration config = GetConfig();
+            Configuration config = Helper.GetConfig();
             using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 Assert.IsNotNull(provider);
@@ -20,12 +18,12 @@ namespace CarespaceFinanceHelper.Tests
         }
 
         [TestMethod]
-        public void TestGetValues()
+        public void TestReadValues()
         {
-            Configuration config = GetConfig();
+            Configuration config = Helper.GetConfig();
             using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
-                IList<Row> rows = DataManager.GetValues<Row>(provider, GetRange);
+                IList<Row> rows = DataManager.ReadValues<Row>(provider, GetRange);
                 Assert.IsNotNull(rows);
                 Assert.AreEqual(2, rows.Count);
                 CheckRow(Comment1, Date1, Amount1, rows[0]);
@@ -34,19 +32,19 @@ namespace CarespaceFinanceHelper.Tests
         }
 
         [TestMethod]
-        public void TestAppendValues()
+        public void TestWriteValues()
         {
-            Configuration config = GetConfig();
+            Configuration config = Helper.GetConfig();
             using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
-                DataManager.AppendValues(provider, GetRange, new[] { Row });
-                IList<Row> rows = DataManager.GetValues<Row>(provider, UpdateRange);
+                DataManager.WriteValues(provider, GetRange, new[] { Row });
+                IList<Row> rows = DataManager.ReadValues<Row>(provider, UpdateRange);
                 Assert.IsNotNull(rows);
                 Assert.AreEqual(1, rows.Count);
                 CheckRow(Row, rows[0]);
 
-                DataManager.AppendValues(provider, UpdateRange, new[] { EmptyRow }, true);
-                rows = DataManager.GetValues<Row>(provider, UpdateRange);
+                DataManager.WriteValues(provider, UpdateRange, new[] { EmptyRow }, true);
+                rows = DataManager.ReadValues<Row>(provider, UpdateRange);
                 Assert.IsNull(rows);
             }
         }
@@ -63,15 +61,6 @@ namespace CarespaceFinanceHelper.Tests
             Assert.AreEqual(comment, row.Comment);
             Assert.AreEqual(date, row.Date);
             Assert.AreEqual(amount, row.Amount);
-        }
-
-        private static Configuration GetConfig()
-        {
-            return new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json") // Create appsettings.json for private settings
-                .Build()
-                .Get<Configuration>();
         }
 
         private const string GetRange = "Test!A2:C4";

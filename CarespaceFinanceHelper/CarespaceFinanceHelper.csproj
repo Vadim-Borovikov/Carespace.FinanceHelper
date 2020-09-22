@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.49.0.2077" />
+    <PackageReference Include="RestSharp" Version="106.11.5" />
   </ItemGroup>
 
 </Project>
