@@ -12,9 +12,9 @@ namespace CarespaceFinanceHelper.Tests
 
         public void Load(IList<object> values)
         {
-            Comment = values[0].ToString();
-            Date = values[1].ToDateTime();
-            Amount = values[2].ToDecimal();
+            Comment = values.ToString(0);
+            Date = values.ToDateTime(1);
+            Amount = values.ToDecimal(2);
         }
 
         public IList<object> Save()
@@ -23,7 +23,7 @@ namespace CarespaceFinanceHelper.Tests
             {
                 Comment,
                 $"{Date:dd MMMM yyyy}",
-                $"{Amount:C}"
+                $"{Amount}"
             };
         }
     }

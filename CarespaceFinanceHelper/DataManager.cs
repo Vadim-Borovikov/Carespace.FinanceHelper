@@ -34,7 +34,32 @@ namespace CarespaceFinanceHelper
             return instance;
         }
 
-        public static DateTime ToDateTime(this object o) => DateTime.FromOADate((long)o);
-        public static decimal ToDecimal(this object o) => decimal.Parse(o.ToString());
+        public static string ToString(this IList<object> values, int index)
+        {
+            return Extract(values, index, o => o?.ToString());
+        }
+        public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
+        public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
+
+        private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
+        {
+            object o = values.Count > index ? values[index] : null;
+            return cast(o);
+        }
+
+        private static DateTime? ToDateTime(object o) => o is long l ? (DateTime?) DateTime.FromOADate(l) : null;
+
+        private static decimal? ToDecimal(object o)
+        {
+            switch (o)
+            {
+                case long l:
+                    return l;
+                case double d:
+                    return (decimal) d;
+                default:
+                    return null;
+            }
+        }
     }
 }

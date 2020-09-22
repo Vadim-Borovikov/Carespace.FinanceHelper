@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 /CarespaceFinanceHelper.Tests/appsettings.json
+/CarespaceFinanceHelper.Console/appsettings.override.json
