@@ -6,13 +6,7 @@ namespace CarespaceFinanceHelper
 {
     public static class DataManager
     {
-        public static object GetValue(GoogleSheetsProvider provider, string range)
-        {
-            IEnumerable<IList<object>> values = provider.GetValues(range);
-            return values.FirstOrDefault()?.FirstOrDefault();
-        }
-
-        public static IList<T> GetValues<T>(GoogleSheetsProvider provider, string range) where T: ILoadable, new()
+        public static IList<T> GetValues<T>(GoogleSheetsProvider provider, string range) where T : ILoadable, new()
         {
             IEnumerable<IList<object>> values = provider.GetValues(range, true);
             return values?.Select(LoadValues<T>).ToList();
@@ -33,14 +27,14 @@ namespace CarespaceFinanceHelper
             }
         }
 
-        private static T LoadValues<T>(IList<object> values) where T: ILoadable, new()
+        private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
         {
             var instance = new T();
             instance.Load(values);
             return instance;
         }
 
-        public static DateTime ToDateTime(this object o) => DateTime.FromOADate((long) o);
+        public static DateTime ToDateTime(this object o) => DateTime.FromOADate((long)o);
         public static decimal ToDecimal(this object o) => decimal.Parse(o.ToString());
     }
 }
