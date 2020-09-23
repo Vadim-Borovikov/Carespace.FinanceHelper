@@ -9,6 +9,8 @@ namespace CarespaceFinanceHelper
 {
     public static class DataManager
     {
+        #region Google
+
         public static IList<T> ReadValues<T>(GoogleSheets provider, string range) where T : ILoadable, new()
         {
             IEnumerable<IList<object>> values = provider.GetValues(range, true);
@@ -29,6 +31,46 @@ namespace CarespaceFinanceHelper
                 provider.AppentValues(range, table);
             }
         }
+
+        public static string ToString(this IList<object> values, int index)
+        {
+            return Extract(values, index, o => o?.ToString());
+        }
+        public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
+        public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
+
+        private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
+        {
+            object o = values.Count > index ? values[index] : null;
+            return cast(o);
+        }
+
+        private static DateTime? ToDateTime(object o) => o is long l ? (DateTime?) DateTime.FromOADate(l) : null;
+        private static decimal? ToDecimal(object o)
+        {
+            switch (o)
+            {
+                case long l:
+                    return l;
+                case double d:
+                    return (decimal) d;
+                default:
+                    return null;
+            }
+        }
+
+        private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
+        {
+            var instance = new T();
+            instance.Load(values);
+            return instance;
+        }
+
+        #endregion // Google
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region SelfWork
 
         public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
             string appVersion, string refreshToken)
@@ -54,17 +96,11 @@ namespace CarespaceFinanceHelper
             transaction.TaxReceiptId = result.ApprovedReceiptUuid;
         }
 
-        private static string GetTaxName(Transaction transaction, string taxNameFormat)
-        {
-            if (!transaction.DigisellerProductId.HasValue)
-            {
-                return transaction.Name;
-            }
+        #endregion // SelfWork
 
-            ProductResult info = Digiseller.GetProductsInfo(transaction.DigisellerProductId.Value);
-            string productName = info.Info.Name;
-            return string.Format(taxNameFormat, productName);
-        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Digiseller
 
         public static IEnumerable<Transaction> GetDigisellerSells(int sellerId, List<int> productIds,
             DateTime dateStat, DateTime dateFinish, string sellerSecret)
@@ -85,12 +121,30 @@ namespace CarespaceFinanceHelper
             } while (page <= totalPages);
         }
 
-        public static string ToString(this IList<object> values, int index)
+        private static string GetTaxName(Transaction transaction, string taxNameFormat)
         {
-            return Extract(values, index, o => o?.ToString());
+            if (!transaction.DigisellerProductId.HasValue)
+            {
+                return transaction.Name;
+            }
+
+            ProductResult info = Digiseller.GetProductsInfo(transaction.DigisellerProductId.Value);
+            string productName = info.Info.Name;
+            return string.Format(taxNameFormat, productName);
         }
-        public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
-        public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
+
+        private static Transaction CreateTransaction(SellsResult.Sell sell)
+        {
+            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId);
+        }
+
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+
+        #endregion // Digiseller
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Common
 
         public static int? ExtractIntParameter(string value, string format)
         {
@@ -119,39 +173,6 @@ namespace CarespaceFinanceHelper
             return parameter == null ? null : string.Format(format, parameter);
         }
 
-        private static Transaction CreateTransaction(SellsResult.Sell sell)
-        {
-            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId);
-        }
-
-        private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
-        {
-            var instance = new T();
-            instance.Load(values);
-            return instance;
-        }
-
-        private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
-        {
-            object o = values.Count > index ? values[index] : null;
-            return cast(o);
-        }
-
-        private static DateTime? ToDateTime(object o) => o is long l ? (DateTime?) DateTime.FromOADate(l) : null;
-
-        private static decimal? ToDecimal(object o)
-        {
-            switch (o)
-            {
-                case long l:
-                    return l;
-                case double d:
-                    return (decimal) d;
-                default:
-                    return null;
-            }
-        }
-
-        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        #endregion // Common
     }
 }
