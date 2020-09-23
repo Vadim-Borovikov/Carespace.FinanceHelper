@@ -240,6 +240,43 @@ namespace CarespaceFinanceHelper
 
         #region Common
 
+        public static void CalculateShares(Transaction transaction, decimal taxFeePercent,
+            decimal digisellerFeePercent, Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents)
+        {
+            decimal amount = transaction.Amount;
+
+            if (transaction.Price.HasValue)
+            {
+                decimal price = transaction.Price.Value;
+                decimal tax = Round(price * taxFeePercent);
+                transaction.Tax = tax;
+                amount -= transaction.Tax.Value;
+
+                if (transaction.DigisellerSellId.HasValue)
+                {
+                    decimal digisellerFee = Round(price * digisellerFeePercent);
+                    transaction.DigisellerFee = digisellerFee;
+                    amount -= digisellerFee;
+
+                    if (!transaction.PayMethodInfo.HasValue)
+                    {
+                        throw new ArgumentNullException();
+                    }
+                    decimal payMasterFee = Round(amount * payMasterFeePercents[transaction.PayMethodInfo.Value]);
+                    transaction.PayMasterFee = payMasterFee;
+                    amount -= payMasterFee;
+                }
+            }
+
+            decimal ilyaShare = Round(amount / 3);
+            transaction.IlyaShare = ilyaShare;
+
+            decimal ritaShare = Round(amount / 3);
+            transaction.RitaShare = ritaShare;
+
+            transaction.DimaShare = amount - ilyaShare - ritaShare;
+        }
+
         public static int? ExtractIntParameter(string value, string format)
         {
             string paramter = ExtractParameter(value, format);
@@ -271,6 +308,8 @@ namespace CarespaceFinanceHelper
             string url = string.Format(urlFormat, parameter);
             return string.Format(HyperlinkFormat, url, parameter);
         }
+
+        private static decimal Round(decimal d) => Math.Round(d, 2);
 
         private const string HyperlinkFormat = "=HYPERLINK(\"{0}\";\"{1}\")";
 

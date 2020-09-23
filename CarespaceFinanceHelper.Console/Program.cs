@@ -53,6 +53,16 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.WriteLine("done.");
 
+                System.Console.Write("Calculating shares... ");
+
+                foreach (Transaction transaction in transactions)
+                {
+                    DataManager.CalculateShares(transaction, config.TaxFeePercent, config.DigisellerFeePercent,
+                        config.PayMasterFeePercents);
+                }
+
+                System.Console.WriteLine("done.");
+
                 List<Transaction> needPayment = transactions.Where(t => t.NeedPaynemt).ToList();
                 if (needPayment.Any())
                 {

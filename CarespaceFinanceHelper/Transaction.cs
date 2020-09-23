@@ -5,7 +5,7 @@ namespace CarespaceFinanceHelper
 {
     public sealed class Transaction : ILoadable, ISavable
     {
-        internal enum PayMethod
+        public enum PayMethod
         {
             BankCard,
             Sbp
@@ -20,13 +20,19 @@ namespace CarespaceFinanceHelper
         // Data
         internal string Name { get; private set; }
         public DateTime Date { get; private set; }
-        private decimal _amount;
+        internal decimal Amount { get; private set; }
         internal decimal? Price { get; private set; }
         internal int? DigisellerSellId { get; private set; }
         internal int? DigisellerProductId { get; private set; }
         internal string TaxReceiptId;
         internal int? PayMasterPaymentId;
-        private PayMethod? _payMethod;
+        internal PayMethod? PayMethodInfo { get; private set; }
+        internal decimal? DigisellerFee;
+        internal decimal? PayMasterFee;
+        internal decimal? Tax;
+        internal decimal? IlyaShare;
+        internal decimal? RitaShare;
+        internal decimal? DimaShare;
 
         public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
 
@@ -37,11 +43,11 @@ namespace CarespaceFinanceHelper
         {
             Name = productName;
             Date = datePay;
-            _amount = price;
+            Amount = price;
             Price = price;
             DigisellerSellId = digisellerSellId;
             DigisellerProductId = digisellerProductId;
-            _payMethod = payMethod;
+            PayMethodInfo = payMethod;
         }
 
         public void Load(IList<object> values)
@@ -60,13 +66,13 @@ namespace CarespaceFinanceHelper
             {
                 throw new ArgumentNullException($"Empty amount in \"{Name}\"");
             }
-            _amount = amount.Value;
+            Amount = amount.Value;
 
             Price = values.ToDecimal(3);
 
             DigisellerProductId = values.ToInt(4);
 
-            _payMethod = values.ToPayMathod(5);
+            PayMethodInfo = values.ToPayMathod(5);
 
             DigisellerSellId = values.ToInt(6);
 
@@ -81,13 +87,19 @@ namespace CarespaceFinanceHelper
             {
                 Name,
                 $"{Date:d MMMM yyyy}",
-                $"{_amount}",
+                $"{Amount}",
                 $"{Price}",
                 $"{DataManager.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId)}",
-                $"{_payMethod}",
+                $"{PayMethodInfo}",
                 $"{DataManager.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId)}",
                 $"{DataManager.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId)}",
-                $"{DataManager.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId)}"
+                $"{DataManager.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId)}",
+                $"{DigisellerFee}",
+                $"{PayMasterFee}",
+                $"{Tax}",
+                $"{IlyaShare}",
+                $"{RitaShare}",
+                $"{DimaShare}"
             };
         }
     }

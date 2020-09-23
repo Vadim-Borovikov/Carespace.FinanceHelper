@@ -3,7 +3,6 @@
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable CollectionNeverUpdated.Global
 
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
@@ -38,5 +37,9 @@ namespace CarespaceFinanceHelper.Console
         public string PayMasterLogin { get; set; }
         public string PayMasterPassword { get; set; }
         public List<string> PayMasterPurposesFormats { get; set; }
+
+        public decimal TaxFeePercent { get; set; }
+        public decimal DigisellerFeePercent { get; set; }
+        public Dictionary<Transaction.PayMethod, decimal> PayMasterFeePercents { get; set; }
     }
 }
