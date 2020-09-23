@@ -4,9 +4,9 @@ using CarespaceFinanceHelper.Dto.SelfWork;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace CarespaceFinanceHelper
+namespace CarespaceFinanceHelper.Providers
 {
-    internal static class SelfWorkProvider
+    internal static class SelfWork
     {
         public static TokenResult GetToken(string userAgent, string sourceDeviceId, string sourceType,
             string appVersion, string refreshToken)

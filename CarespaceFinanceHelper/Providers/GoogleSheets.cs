@@ -5,11 +5,11 @@ using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 
-namespace CarespaceFinanceHelper
+namespace CarespaceFinanceHelper.Providers
 {
-    public sealed class GoogleSheetsProvider : IDisposable
+    public sealed class GoogleSheets : IDisposable
     {
-        public GoogleSheetsProvider(string credentialJson, string sheetId)
+        public GoogleSheets(string credentialJson, string sheetId)
         {
             GoogleCredential credential = GoogleCredential.FromJson(credentialJson).CreateScoped(Scopes);
 

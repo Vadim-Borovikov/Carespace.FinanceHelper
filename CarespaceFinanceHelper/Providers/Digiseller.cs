@@ -5,9 +5,9 @@ using CarespaceFinanceHelper.Dto.Digiseller;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace CarespaceFinanceHelper
+namespace CarespaceFinanceHelper.Providers
 {
-    internal static class DigisellerProvider
+    internal static class Digiseller
     {
         public static ProductResult GetProductsInfo(int productId)
         {

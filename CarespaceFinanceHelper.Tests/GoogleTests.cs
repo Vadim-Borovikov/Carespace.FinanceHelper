@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CarespaceFinanceHelper.Providers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CarespaceFinanceHelper.Tests
@@ -11,7 +12,7 @@ namespace CarespaceFinanceHelper.Tests
         public void TestGoogleSheetsProvider()
         {
             Configuration config = Helper.GetConfig();
-            using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
+            using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 Assert.IsNotNull(provider);
             }
@@ -21,7 +22,7 @@ namespace CarespaceFinanceHelper.Tests
         public void TestReadValues()
         {
             Configuration config = Helper.GetConfig();
-            using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
+            using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 IList<Row> rows = DataManager.ReadValues<Row>(provider, GetRange);
                 Assert.IsNotNull(rows);
@@ -35,7 +36,7 @@ namespace CarespaceFinanceHelper.Tests
         public void TestWriteValues()
         {
             Configuration config = Helper.GetConfig();
-            using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
+            using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 DataManager.WriteValues(provider, GetRange, new[] { Row });
                 IList<Row> rows = DataManager.ReadValues<Row>(provider, UpdateRange);

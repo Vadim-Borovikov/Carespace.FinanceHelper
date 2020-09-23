@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CarespaceFinanceHelper.Providers;
 using Microsoft.Extensions.Configuration;
 
 namespace CarespaceFinanceHelper.Console
@@ -24,7 +25,7 @@ namespace CarespaceFinanceHelper.Console
 
             var transactions = new List<Transaction>();
 
-            using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
+            using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 IList<Transaction> customTransactions =
                     DataManager.ReadValues<Transaction>(provider, config.GoogleCustomRange);

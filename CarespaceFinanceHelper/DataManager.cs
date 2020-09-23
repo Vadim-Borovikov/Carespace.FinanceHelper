@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using CarespaceFinanceHelper.Dto.Digiseller;
 using CarespaceFinanceHelper.Dto.SelfWork;
+using CarespaceFinanceHelper.Providers;
 
 namespace CarespaceFinanceHelper
 {
     public static class DataManager
     {
-        public static IList<T> ReadValues<T>(GoogleSheetsProvider provider, string range) where T : ILoadable, new()
+        public static IList<T> ReadValues<T>(GoogleSheets provider, string range) where T : ILoadable, new()
         {
             IEnumerable<IList<object>> values = provider.GetValues(range, true);
             return values?.Select(LoadValues<T>).ToList();
         }
 
-        public static void WriteValues<T>(GoogleSheetsProvider provider, string range, IEnumerable<T> values,
+        public static void WriteValues<T>(GoogleSheets provider, string range, IEnumerable<T> values,
             bool overwrite = false)
             where T : ISavable
         {
@@ -32,8 +33,7 @@ namespace CarespaceFinanceHelper
         public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
             string appVersion, string refreshToken)
         {
-            TokenResult result =
-                SelfWorkProvider.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
+            TokenResult result = SelfWork.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
             return result.Token;
         }
 
@@ -48,8 +48,8 @@ namespace CarespaceFinanceHelper
             };
             var services = new List<IncomeRequest.Service> { service };
 
-            IncomeResult result = SelfWorkProvider.PostIncome(incomeType, transaction.Date, DateTime.Now, services,
-                amount, paymentType, token);
+            IncomeResult result =
+                SelfWork.PostIncome(incomeType, transaction.Date, DateTime.Now, services, amount, paymentType, token);
 
             transaction.TaxReceiptId = result.ApprovedReceiptUuid;
         }
@@ -61,7 +61,7 @@ namespace CarespaceFinanceHelper
                 return transaction.Name;
             }
 
-            ProductResult info = DigisellerProvider.GetProductsInfo(transaction.DigisellerProductId.Value);
+            ProductResult info = Digiseller.GetProductsInfo(transaction.DigisellerProductId.Value);
             string productName = info.Info.Name;
             return string.Format(taxNameFormat, productName);
         }
@@ -75,7 +75,7 @@ namespace CarespaceFinanceHelper
             int totalPages;
             do
             {
-                SellsResult dto = DigisellerProvider.GetSells(sellerId, productIds, start, end, page, sellerSecret);
+                SellsResult dto = Digiseller.GetSells(sellerId, productIds, start, end, page, sellerSecret);
                 foreach (SellsResult.Sell sell in dto.Sells)
                 {
                     yield return CreateTransaction(sell);
