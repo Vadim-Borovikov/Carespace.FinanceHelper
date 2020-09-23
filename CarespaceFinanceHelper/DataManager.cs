@@ -29,13 +29,6 @@ namespace CarespaceFinanceHelper
             }
         }
 
-        public static string GetDigisellerProductName(string url, string urlPrefix)
-        {
-            int id = int.Parse(url.Replace(urlPrefix, ""));
-            ProductResult info = DigisellerProvider.GetProductsInfo(id);
-            return info.Info.Name;
-        }
-
         public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
             string appVersion, string refreshToken)
         {
@@ -44,25 +37,37 @@ namespace CarespaceFinanceHelper
             return result.Token;
         }
 
-        public static string RegisterTax(string name, decimal amount, DateTime date, string incomeType,
-            string paymentType, string token, string taxReceiptUrlFormat)
+        public static void RegisterTax(Transaction transaction, decimal amount, string incomeType,
+            string paymentType, string taxNameFormat, string token)
         {
             var service = new IncomeRequest.Service
             {
                 Amount = amount,
-                Name = name,
+                Name = GetTaxName(transaction, taxNameFormat),
                 Quantity = 1
             };
             var services = new List<IncomeRequest.Service> { service };
 
-            IncomeResult result =
-                SelfWorkProvider.PostIncome(incomeType, date, DateTime.Now, services, amount, paymentType, token);
-            string id = result.ApprovedReceiptUuid;
-            return string.Format(taxReceiptUrlFormat, id);
+            IncomeResult result = SelfWorkProvider.PostIncome(incomeType, transaction.Date, DateTime.Now, services,
+                amount, paymentType, token);
+
+            transaction.TaxReceiptId = result.ApprovedReceiptUuid;
+        }
+
+        private static string GetTaxName(Transaction transaction, string taxNameFormat)
+        {
+            if (!transaction.DigisellerProductId.HasValue)
+            {
+                return transaction.Name;
+            }
+
+            ProductResult info = DigisellerProvider.GetProductsInfo(transaction.DigisellerProductId.Value);
+            string productName = info.Info.Name;
+            return string.Format(taxNameFormat, productName);
         }
 
         public static IEnumerable<Transaction> GetDigisellerSells(int sellerId, List<int> productIds,
-            DateTime dateStat, DateTime dateFinish, string sellUrlPrefix, string productUrlPrefix, string sellerSecret)
+            DateTime dateStat, DateTime dateFinish, string sellerSecret)
         {
             string start = dateStat.ToString(DateTimeFormat);
             string end = dateFinish.ToString(DateTimeFormat);
@@ -73,7 +78,7 @@ namespace CarespaceFinanceHelper
                 SellsResult dto = DigisellerProvider.GetSells(sellerId, productIds, start, end, page, sellerSecret);
                 foreach (SellsResult.Sell sell in dto.Sells)
                 {
-                    yield return CreateTransaction(sell, sellUrlPrefix, productUrlPrefix);
+                    yield return CreateTransaction(sell);
                 }
                 ++page;
                 totalPages = dto.Pages;
@@ -87,18 +92,36 @@ namespace CarespaceFinanceHelper
         public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
         public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
 
-        private static Transaction CreateTransaction(SellsResult.Sell sell, string sellUrlPrefix,
-            string productUrlPrefix)
+        public static int? ExtractIntParameter(string value, string format)
         {
-            return new Transaction
+            string paramter = ExtractParameter(value, format);
+            return int.TryParse(paramter, out int result) ? (int?) result : null;
+        }
+
+        public static string ExtractParameter(string value, string format)
+        {
+            if (value == null)
             {
-                Name = sell.ProductName,
-                Date = sell.DatePay,
-                Amount = sell.AmountIn,
-                Price = sell.AmountIn,
-                DigisellerSellUrl = $"{sellUrlPrefix}{sell.InvoiceId}",
-                DigisellerProductUrl = $"{productUrlPrefix}{sell.ProductId}"
-            };
+                return null;
+            }
+
+            int left = format.IndexOf('{');
+            int right = format.IndexOf('}');
+
+            int prefixLength = left;
+            int postfixLenght = format.Length - right - 1;
+
+            return value.Substring(prefixLength, value.Length - prefixLength - postfixLenght);
+        }
+
+        internal static string Format(string format, object parameter)
+        {
+            return parameter == null ? null : string.Format(format, parameter);
+        }
+
+        private static Transaction CreateTransaction(SellsResult.Sell sell)
+        {
+            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId);
         }
 
         private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()

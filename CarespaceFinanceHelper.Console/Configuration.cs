@@ -19,8 +19,8 @@ namespace CarespaceFinanceHelper.Console
         public Dictionary<string, string> GoogleCredentials { get; set; }
         public string GoogleCredentialsJson => JsonConvert.SerializeObject(GoogleCredentials);
 
-        public string DigisellerProductUrlPrefix { get; set; }
-        public string DigisellerSellUrlPrefix { get; set; }
+        public string DigisellerProductUrlFormat { get; set; }
+        public string DigisellerSellUrlFormat { get; set; }
         public int DigisellerId { get; set; }
         public List<int> DigisellerProductIds { get; set; }
         public string DigisellerApiGuid { get; set; }

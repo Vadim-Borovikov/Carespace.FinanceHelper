@@ -5,13 +5,44 @@ namespace CarespaceFinanceHelper
 {
     public sealed class Transaction : ILoadable, ISavable
     {
-        public string Name;
-        public DateTime Date;
-        internal decimal Amount;
-        public decimal? Price;
-        internal string DigisellerSellUrl;
-        public string DigisellerProductUrl;
-        public string TaxReceiptUrl;
+        internal string Name { get; private set; }
+        public DateTime Date { get; private set; }
+        private decimal _amount;
+        public decimal? Price { get; private set; }
+
+        private readonly int? _digisellerSellId;
+        internal int? DigisellerProductId { get; private set; }
+        internal string TaxReceiptId;
+
+        private string DigisellerSellUrl => DataManager.Format(DigisellerSellUrlFormat, _digisellerSellId);
+
+        private string DigisellerProductUrl
+        {
+            get => DataManager.Format(DigisellerProductUrlFormat, DigisellerProductId);
+            set => DigisellerProductId = DataManager.ExtractIntParameter(value, DigisellerProductUrlFormat);
+        }
+
+        public string TaxReceiptUrl
+        {
+            get => DataManager.Format(TaxReceiptUrlFormat, TaxReceiptId);
+            private set => TaxReceiptId = DataManager.ExtractParameter(value, TaxReceiptUrlFormat);
+        }
+
+        public static string DigisellerSellUrlFormat;
+        public static string DigisellerProductUrlFormat;
+        public static string TaxReceiptUrlFormat;
+
+        public Transaction() { }
+
+        internal Transaction(string productName, DateTime datePay, decimal price, int invoiceId, int productId)
+        {
+            Name = productName;
+            Date = datePay;
+            _amount = price;
+            Price = price;
+            _digisellerSellId = invoiceId;
+            DigisellerProductId = productId;
+        }
 
         public void Load(IList<object> values)
         {
@@ -29,9 +60,10 @@ namespace CarespaceFinanceHelper
             {
                 throw new ArgumentNullException($"Empty amount in \"{Name}\"");
             }
-            Amount = amount.Value;
+            _amount = amount.Value;
 
             Price = values.ToDecimal(3);
+
             DigisellerProductUrl = values.ToString(4);
             TaxReceiptUrl = values.ToString(5);
         }
@@ -42,7 +74,7 @@ namespace CarespaceFinanceHelper
             {
                 Name,
                 $"{Date:d MMMM yyyy}",
-                $"{Amount}",
+                $"{_amount}",
                 $"{Price}",
                 $"{DigisellerSellUrl}",
                 $"{DigisellerProductUrl}",

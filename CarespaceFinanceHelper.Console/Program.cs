@@ -16,6 +16,10 @@ namespace CarespaceFinanceHelper.Console
 
             System.Console.WriteLine("done.");
 
+            Transaction.DigisellerSellUrlFormat = config.DigisellerSellUrlFormat;
+            Transaction.DigisellerProductUrlFormat = config.DigisellerProductUrlFormat;
+            Transaction.TaxReceiptUrlFormat = config.TaxReceiptUrlFormat;
+
             System.Console.Write("Loading google transactions... ");
 
             var transactions = new List<Transaction>();
@@ -32,8 +36,7 @@ namespace CarespaceFinanceHelper.Console
 
                 List<Transaction> sells =
                     DataManager.GetDigisellerSells(config.DigisellerId, config.DigisellerProductIds,
-                    config.EarliestDate, DateTime.Today, config.DigisellerSellUrlPrefix,
-                    config.DigisellerProductUrlPrefix, config.DigisellerApiGuid).ToList();
+                    config.EarliestDate, DateTime.Today, config.DigisellerApiGuid).ToList();
                 transactions.AddRange(sells);
 
                 System.Console.WriteLine("done.");
@@ -67,23 +70,9 @@ namespace CarespaceFinanceHelper.Console
                         config.TaxSourceType, config.TaxAppVersion, config.TaxRefreshToken);
                 }
 
-                string name = GetTaxName(t, config);
-
-                t.TaxReceiptUrl = DataManager.RegisterTax(name, t.Price.Value, t.Date, config.TaxIncomeType,
-                    config.TaxPaymentType, token, config.TaxReceiptUrlFormat);
+                DataManager.RegisterTax(t, t.Price.Value, config.TaxIncomeType, config.TaxPaymentType,
+                    config.TaxProductNameFormat, token);
             }
-        }
-
-        private static string GetTaxName(Transaction transaction, Configuration config)
-        {
-            if (string.IsNullOrWhiteSpace(transaction.DigisellerProductUrl))
-            {
-                return transaction.Name;
-            }
-
-            string productName = DataManager.GetDigisellerProductName(transaction.DigisellerProductUrl,
-                config.DigisellerProductUrlPrefix);
-            return string.Format(config.TaxProductNameFormat, productName);
         }
 
         private static Configuration GetConfig()
