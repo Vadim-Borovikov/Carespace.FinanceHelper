@@ -61,11 +61,23 @@ namespace CarespaceFinanceHelper
             return string.Format(taxReceiptUrlFormat, id);
         }
 
-        private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
+        public static IEnumerable<Transaction> GetDigisellerSells(int sellerId, List<int> productIds,
+            DateTime dateStat, DateTime dateFinish, string sellUrlPrefix, string productUrlPrefix, string sellerSecret)
         {
-            var instance = new T();
-            instance.Load(values);
-            return instance;
+            string start = dateStat.ToString(DateTimeFormat);
+            string end = dateFinish.ToString(DateTimeFormat);
+            int page = 1;
+            int totalPages;
+            do
+            {
+                SellsResult dto = DigisellerProvider.GetSells(sellerId, productIds, start, end, page, sellerSecret);
+                foreach (SellsResult.Sell sell in dto.Sells)
+                {
+                    yield return CreateTransaction(sell, sellUrlPrefix, productUrlPrefix);
+                }
+                ++page;
+                totalPages = dto.Pages;
+            } while (page <= totalPages);
         }
 
         public static string ToString(this IList<object> values, int index)
@@ -74,6 +86,27 @@ namespace CarespaceFinanceHelper
         }
         public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
         public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
+
+        private static Transaction CreateTransaction(SellsResult.Sell sell, string sellUrlPrefix,
+            string productUrlPrefix)
+        {
+            return new Transaction
+            {
+                Name = sell.ProductName,
+                Date = sell.DatePay,
+                Amount = sell.AmountIn,
+                Price = sell.AmountIn,
+                DigisellerSellUrl = $"{sellUrlPrefix}{sell.InvoiceId}",
+                DigisellerProductUrl = $"{productUrlPrefix}{sell.ProductId}"
+            };
+        }
+
+        private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
+        {
+            var instance = new T();
+            instance.Load(values);
+            return instance;
+        }
 
         private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
         {
@@ -95,5 +128,7 @@ namespace CarespaceFinanceHelper
                     return null;
             }
         }
+
+        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
     }
 }

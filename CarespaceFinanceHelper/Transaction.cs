@@ -7,8 +7,9 @@ namespace CarespaceFinanceHelper
     {
         public string Name;
         public DateTime Date;
-        private decimal _amount;
+        internal decimal Amount;
         public decimal? Price;
+        internal string DigisellerSellUrl;
         public string DigisellerProductUrl;
         public string TaxReceiptUrl;
 
@@ -28,7 +29,7 @@ namespace CarespaceFinanceHelper
             {
                 throw new ArgumentNullException($"Empty amount in \"{Name}\"");
             }
-            _amount = amount.Value;
+            Amount = amount.Value;
 
             Price = values.ToDecimal(3);
             DigisellerProductUrl = values.ToString(4);
@@ -41,8 +42,9 @@ namespace CarespaceFinanceHelper
             {
                 Name,
                 $"{Date:d MMMM yyyy}",
-                $"{_amount}",
+                $"{Amount}",
                 $"{Price}",
+                $"{DigisellerSellUrl}",
                 $"{DigisellerProductUrl}",
                 $"{TaxReceiptUrl}"
             };

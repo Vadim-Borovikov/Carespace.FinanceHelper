@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 
 namespace CarespaceFinanceHelper.Console
@@ -16,10 +18,23 @@ namespace CarespaceFinanceHelper.Console
 
             System.Console.Write("Loading google transactions... ");
 
+            var transactions = new List<Transaction>();
+
             using (var provider = new GoogleSheetsProvider(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 IList<Transaction> customTransactions =
                     DataManager.ReadValues<Transaction>(provider, config.GoogleCustomRange);
+                transactions.AddRange(customTransactions);
+
+                System.Console.WriteLine("done.");
+
+                System.Console.Write("Loading digiseller sells... ");
+
+                List<Transaction> sells =
+                    DataManager.GetDigisellerSells(config.DigisellerId, config.DigisellerProductIds,
+                    config.EarliestDate, DateTime.Today, config.DigisellerSellUrlPrefix,
+                    config.DigisellerProductUrlPrefix, config.DigisellerApiGuid).ToList();
+                transactions.AddRange(sells);
 
                 System.Console.WriteLine("done.");
 
@@ -29,7 +44,7 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.WriteLine("done.");
 
-                DataManager.WriteValues(provider, config.GoogleFinalRange, customTransactions, true);
+                DataManager.WriteValues(provider, config.GoogleFinalRange, transactions.OrderBy(t => t.Date), true);
             }
 
             System.Console.WriteLine("done.");
