@@ -55,11 +55,8 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.Write("Calculating shares... ");
 
-                foreach (Transaction transaction in transactions)
-                {
-                    DataManager.CalculateShares(transaction, config.TaxFeePercent, config.DigisellerFeePercent,
-                        config.PayMasterFeePercents);
-                }
+                DataManager.CalculateShares(transactions, config.TaxFeePercent, config.DigisellerFeePercent,
+                    config.PayMasterFeePercents, config.IlyaShareLimit, config.IlyaShareAfterLimit);
 
                 System.Console.WriteLine("done.");
 

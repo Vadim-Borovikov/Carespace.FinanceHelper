@@ -240,41 +240,59 @@ namespace CarespaceFinanceHelper
 
         #region Common
 
-        public static void CalculateShares(Transaction transaction, decimal taxFeePercent,
-            decimal digisellerFeePercent, Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents)
+        public static void CalculateShares(IEnumerable<Transaction> transactions, decimal taxFeePercent,
+            decimal digisellerFeePercent, Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents,
+            decimal ilyaShareLimit, decimal ilyaShareAfterLimit)
         {
-            decimal amount = transaction.Amount;
-
-            if (transaction.Price.HasValue)
+            decimal ilyaTotal = 0;
+            foreach (Transaction transaction in transactions)
             {
-                decimal price = transaction.Price.Value;
-                decimal tax = Round(price * taxFeePercent);
-                transaction.Tax = tax;
-                amount -= transaction.Tax.Value;
+                decimal amount = transaction.Amount;
 
-                if (transaction.DigisellerSellId.HasValue)
+                if (transaction.Price.HasValue)
                 {
-                    decimal digisellerFee = Round(price * digisellerFeePercent);
-                    transaction.DigisellerFee = digisellerFee;
-                    amount -= digisellerFee;
+                    decimal price = transaction.Price.Value;
 
-                    if (!transaction.PayMethodInfo.HasValue)
+                    // Tax
+                    decimal tax = Round(price * taxFeePercent);
+                    transaction.Tax = tax;
+                    amount -= transaction.Tax.Value;
+
+                    if (transaction.DigisellerSellId.HasValue)
                     {
-                        throw new ArgumentNullException();
+                        // Digiseller
+                        decimal digisellerFee = Round(price * digisellerFeePercent);
+                        transaction.DigisellerFee = digisellerFee;
+                        amount -= digisellerFee;
+
+                        // PayMaster
+                        if (!transaction.PayMethodInfo.HasValue)
+                        {
+                            throw new ArgumentNullException();
+                        }
+                        decimal payMasterFee = Round(amount * payMasterFeePercents[transaction.PayMethodInfo.Value]);
+                        transaction.PayMasterFee = payMasterFee;
+                        amount -= payMasterFee;
                     }
-                    decimal payMasterFee = Round(amount * payMasterFeePercents[transaction.PayMethodInfo.Value]);
-                    transaction.PayMasterFee = payMasterFee;
-                    amount -= payMasterFee;
                 }
+
+                // Ilya
+                decimal baseShare = Round(amount / 3);
+                decimal beforeLimit = Math.Min(baseShare, ilyaShareLimit - ilyaTotal);
+                decimal afterLimit = Math.Min(0, Round(ilyaShareAfterLimit * (baseShare - beforeLimit)));
+                decimal ilyaShare = beforeLimit + afterLimit;
+                ilyaTotal += ilyaShare;
+                transaction.IlyaShare = ilyaShare;
+                amount -= ilyaShare;
+
+                // Rita
+                decimal ritaShare = Round(amount / 2);
+                transaction.RitaShare = ritaShare;
+                amount -= ritaShare;
+
+                // Dima
+                transaction.DimaShare = amount;
             }
-
-            decimal ilyaShare = Round(amount / 3);
-            transaction.IlyaShare = ilyaShare;
-
-            decimal ritaShare = Round(amount / 3);
-            transaction.RitaShare = ritaShare;
-
-            transaction.DimaShare = amount - ilyaShare - ritaShare;
         }
 
         public static int? ExtractIntParameter(string value, string format)

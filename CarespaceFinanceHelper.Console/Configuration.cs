@@ -41,5 +41,8 @@ namespace CarespaceFinanceHelper.Console
         public decimal TaxFeePercent { get; set; }
         public decimal DigisellerFeePercent { get; set; }
         public Dictionary<Transaction.PayMethod, decimal> PayMasterFeePercents { get; set; }
+
+        public decimal IlyaShareLimit { get; set; }
+        public decimal IlyaShareAfterLimit { get; set; }
     }
 }
