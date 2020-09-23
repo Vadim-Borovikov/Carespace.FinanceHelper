@@ -12,25 +12,17 @@ namespace CarespaceFinanceHelper
     {
         #region Google
 
-        public static IList<T> ReadValues<T>(GoogleSheets provider, string range) where T : ILoadable, new()
+        public static IList<T> GetValues<T>(GoogleSheets provider, string range) where T : ILoadable, new()
         {
             IEnumerable<IList<object>> values = provider.GetValues(range, true);
             return values?.Select(LoadValues<T>).ToList();
         }
 
-        public static void WriteValues<T>(GoogleSheets provider, string range, IEnumerable<T> values,
-            bool overwrite = false)
+        public static void UpdateValues<T>(GoogleSheets provider, string range, IEnumerable<T> values)
             where T : ISavable
         {
             List<IList<object>> table = values.Select(v => v.Save()).ToList();
-            if (overwrite)
-            {
-                provider.UpdateValues(range, table);
-            }
-            else
-            {
-                provider.AppentValues(range, table);
-            }
+            provider.UpdateValues(range, table);
         }
 
         public static string ToString(this IList<object> values, int index)

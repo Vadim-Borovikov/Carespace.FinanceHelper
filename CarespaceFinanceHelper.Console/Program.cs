@@ -30,11 +30,11 @@ namespace CarespaceFinanceHelper.Console
             using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 IList<Transaction> oldTransactions =
-                    DataManager.ReadValues<Transaction>(provider, config.GoogleFinalRange);
+                    DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
                 transactions.AddRange(oldTransactions);
 
                 IList<Transaction> newCustomTransactions =
-                    DataManager.ReadValues<Transaction>(provider, config.GoogleCustomRange);
+                    DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange);
                 if (newCustomTransactions != null)
                 {
                     transactions.AddRange(newCustomTransactions);
@@ -88,7 +88,8 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.Write("Writing transactions to google... ");
 
-                DataManager.WriteValues(provider, config.GoogleFinalRange, transactions.OrderBy(t => t.Date), true);
+                DataManager.UpdateValues(provider, config.GoogleFinalRange, transactions.OrderBy(t => t.Date));
+                provider.ClearValues(config.GoogleCustomRange);
             }
 
             System.Console.WriteLine("done.");

@@ -37,16 +37,6 @@ namespace CarespaceFinanceHelper.Providers
             return response.Values;
         }
 
-        internal void AppentValues(string range, IList<IList<object>> values)
-        {
-            var valueRange = new ValueRange { Values = values };
-            SpreadsheetsResource.ValuesResource.AppendRequest request =
-                _service.Spreadsheets.Values.Append(valueRange, _sheetId, range);
-            request.ValueInputOption =
-                SpreadsheetsResource.ValuesResource.AppendRequest.ValueInputOptionEnum.USERENTERED;
-            request.Execute();
-        }
-
         internal void UpdateValues(string range, IList<IList<object>> values)
         {
             var valueRange = new ValueRange { Values = values };
@@ -54,6 +44,14 @@ namespace CarespaceFinanceHelper.Providers
                 _service.Spreadsheets.Values.Update(valueRange, _sheetId, range);
             request.ValueInputOption =
                 SpreadsheetsResource.ValuesResource.UpdateRequest.ValueInputOptionEnum.USERENTERED;
+            request.Execute();
+        }
+
+        public void ClearValues(string range)
+        {
+            var body = new ClearValuesRequest();
+            SpreadsheetsResource.ValuesResource.ClearRequest request =
+                _service.Spreadsheets.Values.Clear(body, _sheetId, range);
             request.Execute();
         }
 

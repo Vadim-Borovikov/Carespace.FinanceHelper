@@ -19,12 +19,12 @@ namespace CarespaceFinanceHelper.Tests
         }
 
         [TestMethod]
-        public void TestReadValues()
+        public void TestGetValues()
         {
             Configuration config = Helper.GetConfig();
             using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
-                IList<Row> rows = DataManager.ReadValues<Row>(provider, GetRange);
+                IList<Row> rows = DataManager.GetValues<Row>(provider, GetRange);
                 Assert.IsNotNull(rows);
                 Assert.AreEqual(2, rows.Count);
                 CheckRow(Comment1, Date1, Amount1, rows[0]);
@@ -33,19 +33,19 @@ namespace CarespaceFinanceHelper.Tests
         }
 
         [TestMethod]
-        public void TestWriteValues()
+        public void TestUpdateAndClearValues()
         {
             Configuration config = Helper.GetConfig();
             using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
-                DataManager.WriteValues(provider, GetRange, new[] { Row });
-                IList<Row> rows = DataManager.ReadValues<Row>(provider, UpdateRange);
+                DataManager.UpdateValues(provider, UpdateRange, new[] { Row });
+                IList<Row> rows = DataManager.GetValues<Row>(provider, UpdateRange);
                 Assert.IsNotNull(rows);
                 Assert.AreEqual(1, rows.Count);
                 CheckRow(Row, rows[0]);
 
-                DataManager.WriteValues(provider, UpdateRange, new[] { EmptyRow }, true);
-                rows = DataManager.ReadValues<Row>(provider, UpdateRange);
+                provider.ClearValues(UpdateRange);
+                rows = DataManager.GetValues<Row>(provider, UpdateRange);
                 Assert.IsNull(rows);
             }
         }
@@ -80,13 +80,6 @@ namespace CarespaceFinanceHelper.Tests
             Comment = "Test",
             Date = DateTime.Today,
             Amount = 3.14m
-        };
-
-        private static readonly Row EmptyRow = new Row
-        {
-            Comment = "",
-            Date = null,
-            Amount = null
         };
     }
 }
