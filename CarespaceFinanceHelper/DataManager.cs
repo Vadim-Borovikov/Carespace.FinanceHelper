@@ -73,28 +73,44 @@ namespace CarespaceFinanceHelper
 
         #region SelfWork
 
+        public static void RegisterTaxes(IEnumerable<Transaction> transactions, string userAgent,
+            string sourceDeviceId, string sourceType, string appVersion, string refreshToken, string incomeType,
+            string paymentType, string nameFormat)
+        {
+            string token = null;
+            // ReSharper disable once LoopCanBePartlyConvertedToQuery
+            foreach (Transaction t in transactions)
+            {
+                if (!t.Price.HasValue || !string.IsNullOrWhiteSpace(t.TaxReceiptId))
+                {
+                    continue;
+                }
+
+                if (token == null)
+                {
+                    token = GetTaxToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
+                }
+
+                var service = new IncomeRequest.Service
+                {
+                    Amount = t.Price.Value,
+                    Name = GetTaxName(t, nameFormat),
+                    Quantity = 1
+                };
+                var services = new List<IncomeRequest.Service> { service };
+
+                IncomeResult result =
+                    SelfWork.PostIncome(incomeType, t.Date, DateTime.Now, services, t.Price.Value, paymentType, token);
+
+                t.TaxReceiptId = result.ApprovedReceiptUuid;
+            }
+        }
+
         public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
             string appVersion, string refreshToken)
         {
             TokenResult result = SelfWork.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
             return result.Token;
-        }
-
-        public static void RegisterTax(Transaction transaction, decimal amount, string incomeType,
-            string paymentType, string taxNameFormat, string token)
-        {
-            var service = new IncomeRequest.Service
-            {
-                Amount = amount,
-                Name = GetTaxName(transaction, taxNameFormat),
-                Quantity = 1
-            };
-            var services = new List<IncomeRequest.Service> { service };
-
-            IncomeResult result =
-                SelfWork.PostIncome(incomeType, transaction.Date, DateTime.Now, services, amount, paymentType, token);
-
-            transaction.TaxReceiptId = result.ApprovedReceiptUuid;
         }
 
         #endregion // SelfWork
@@ -103,7 +119,26 @@ namespace CarespaceFinanceHelper
 
         #region Digiseller
 
-        public static IEnumerable<Transaction> GetDigisellerSells(int sellerId, List<int> productIds,
+        public static IEnumerable<Transaction> GetNewDigisellerSells(int sellerId, List<int> productIds,
+            DateTime dateFinish, string sellerSecret, IList<Transaction> oldTransactions)
+        {
+            DateTime dateStart = oldTransactions.Select(o => o.Date).Min().AddDays(-1);
+
+            IEnumerable<SellsResult.Sell> sells =
+                GetDigisellerSells(sellerId, productIds, dateStart, dateFinish, sellerSecret);
+
+            IEnumerable<int> oldSellIds = oldTransactions
+                .Where(t => t.DigisellerSellId.HasValue)
+                .Select(t => t.DigisellerSellId.Value);
+
+            IEnumerable<SellsResult.Sell> newSells = sells.Where(s => !oldSellIds.Contains(s.InvoiceId));
+            foreach (SellsResult.Sell sell in newSells)
+            {
+                yield return CreateTransaction(sell);
+            }
+        }
+
+        private static IEnumerable<SellsResult.Sell> GetDigisellerSells(int sellerId, List<int> productIds,
             DateTime dateStat, DateTime dateFinish, string sellerSecret)
         {
             string start = dateStat.ToString(GoogleDateTimeFormat);
@@ -115,7 +150,7 @@ namespace CarespaceFinanceHelper
                 SellsResult dto = Digiseller.GetSells(sellerId, productIds, start, end, page, sellerSecret);
                 foreach (SellsResult.Sell sell in dto.Sells)
                 {
-                    yield return CreateTransaction(sell);
+                    yield return sell;
                 }
                 ++page;
                 totalPages = dto.Pages;
@@ -193,7 +228,7 @@ namespace CarespaceFinanceHelper
 
         public static string ExtractParameter(string value, string format)
         {
-            if (value == null)
+            if (string.IsNullOrWhiteSpace(value))
             {
                 return null;
             }

@@ -29,18 +29,24 @@ namespace CarespaceFinanceHelper.Console
 
             using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
-                IList<Transaction> customTransactions =
+                IList<Transaction> oldTransactions =
+                    DataManager.ReadValues<Transaction>(provider, config.GoogleFinalRange);
+                transactions.AddRange(oldTransactions);
+
+                IList<Transaction> newCustomTransactions =
                     DataManager.ReadValues<Transaction>(provider, config.GoogleCustomRange);
-                transactions.AddRange(customTransactions);
+                if (newCustomTransactions != null)
+                {
+                    transactions.AddRange(newCustomTransactions);
+                }
 
                 System.Console.WriteLine("done.");
 
                 System.Console.Write("Loading digiseller sells... ");
 
-                List<Transaction> sells =
-                    DataManager.GetDigisellerSells(config.DigisellerId, config.DigisellerProductIds,
-                    config.EarliestDate, DateTime.Today, config.DigisellerApiGuid).ToList();
-                transactions.AddRange(sells);
+                IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerId,
+                    config.DigisellerProductIds, DateTime.Today, config.DigisellerApiGuid, oldTransactions);
+                transactions.AddRange(newSells);
 
                 System.Console.WriteLine("done.");
 
@@ -58,7 +64,9 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.Write("Register taxes... ");
 
-                RegisterTaxes(config, customTransactions);
+                DataManager.RegisterTaxes(transactions, config.TaxUserAgent, config.TaxSourceDeviceId,
+                    config.TaxSourceType, config.TaxAppVersion, config.TaxRefreshToken, config.TaxIncomeType,
+                    config.TaxPaymentType, config.TaxProductNameFormat);
 
                 System.Console.WriteLine("done.");
 
@@ -68,28 +76,6 @@ namespace CarespaceFinanceHelper.Console
             }
 
             System.Console.WriteLine("done.");
-        }
-
-        private static void RegisterTaxes(Configuration config, IEnumerable<Transaction> transactions)
-        {
-            string token = null;
-            // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach (Transaction t in transactions)
-            {
-                if (!t.Price.HasValue || !string.IsNullOrWhiteSpace(t.TaxReceiptUrl))
-                {
-                    continue;
-                }
-
-                if (token == null)
-                {
-                    token = DataManager.GetTaxToken(config.TaxUserAgent, config.TaxSourceDeviceId,
-                        config.TaxSourceType, config.TaxAppVersion, config.TaxRefreshToken);
-                }
-
-                DataManager.RegisterTax(t, t.Price.Value, config.TaxIncomeType, config.TaxPaymentType,
-                    config.TaxProductNameFormat, token);
-            }
         }
 
         private static Configuration GetConfig()

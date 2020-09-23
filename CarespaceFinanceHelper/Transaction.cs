@@ -5,36 +5,43 @@ namespace CarespaceFinanceHelper
 {
     public sealed class Transaction : ILoadable, ISavable
     {
+        // Common URL formats
+        public static string DigisellerSellUrlFormat;
+        public static string DigisellerProductUrlFormat;
+        public static string TaxReceiptUrlFormat;
+        public static string PayMasterPaymentUrlFormat;
+
+        // Data
         internal string Name { get; private set; }
         public DateTime Date { get; private set; }
         private decimal _amount;
-        public decimal? Price { get; private set; }
-
-        internal readonly int? DigisellerSellId;
+        internal decimal? Price { get; private set; }
+        internal int? DigisellerSellId { get; private set; }
         internal int? DigisellerProductId { get; private set; }
         internal string TaxReceiptId;
         internal int? PayMasterPaymentId;
 
-        private string DigisellerSellUrl => DataManager.Format(DigisellerSellUrlFormat, DigisellerSellId);
-
+        // URL readers-writers
+        private string DigisellerSellUrl
+        {
+            get => DataManager.Format(DigisellerSellUrlFormat, DigisellerSellId);
+            set => DigisellerSellId = DataManager.ExtractIntParameter(value, DigisellerSellUrlFormat);
+        }
         private string DigisellerProductUrl
         {
             get => DataManager.Format(DigisellerProductUrlFormat, DigisellerProductId);
             set => DigisellerProductId = DataManager.ExtractIntParameter(value, DigisellerProductUrlFormat);
         }
-
-        public string TaxReceiptUrl
+        private string TaxReceiptUrl
         {
             get => DataManager.Format(TaxReceiptUrlFormat, TaxReceiptId);
-            private set => TaxReceiptId = DataManager.ExtractParameter(value, TaxReceiptUrlFormat);
+            set => TaxReceiptId = DataManager.ExtractParameter(value, TaxReceiptUrlFormat);
         }
-
-        private string PayMasterPaymentUrl => DataManager.Format(PayMasterPaymentUrlFormat, PayMasterPaymentId);
-
-        public static string DigisellerSellUrlFormat;
-        public static string DigisellerProductUrlFormat;
-        public static string TaxReceiptUrlFormat;
-        public static string PayMasterPaymentUrlFormat;
+        private string PayMasterPaymentUrl
+        {
+            get => DataManager.Format(PayMasterPaymentUrlFormat, PayMasterPaymentId);
+            set => PayMasterPaymentId = DataManager.ExtractIntParameter(value, PayMasterPaymentUrlFormat);
+        }
 
         public Transaction() { }
 
@@ -69,7 +76,12 @@ namespace CarespaceFinanceHelper
             Price = values.ToDecimal(3);
 
             DigisellerProductUrl = values.ToString(4);
-            TaxReceiptUrl = values.ToString(5);
+
+            DigisellerSellUrl = values.ToString(5);
+
+            PayMasterPaymentUrl = values.ToString(6);
+
+            TaxReceiptUrl = values.ToString(7);
         }
 
         public IList<object> Save()
@@ -80,10 +92,10 @@ namespace CarespaceFinanceHelper
                 $"{Date:d MMMM yyyy}",
                 $"{_amount}",
                 $"{Price}",
-                $"{DigisellerSellUrl}",
                 $"{DigisellerProductUrl}",
-                $"{TaxReceiptUrl}",
-                $"{PayMasterPaymentUrl}"
+                $"{DigisellerSellUrl}",
+                $"{PayMasterPaymentUrl}",
+                $"{TaxReceiptUrl}"
             };
         }
     }
