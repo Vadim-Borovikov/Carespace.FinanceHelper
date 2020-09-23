@@ -10,11 +10,12 @@ namespace CarespaceFinanceHelper
         private decimal _amount;
         public decimal? Price { get; private set; }
 
-        private readonly int? _digisellerSellId;
+        internal readonly int? DigisellerSellId;
         internal int? DigisellerProductId { get; private set; }
         internal string TaxReceiptId;
+        internal int? PayMasterPaymentId;
 
-        private string DigisellerSellUrl => DataManager.Format(DigisellerSellUrlFormat, _digisellerSellId);
+        private string DigisellerSellUrl => DataManager.Format(DigisellerSellUrlFormat, DigisellerSellId);
 
         private string DigisellerProductUrl
         {
@@ -28,9 +29,12 @@ namespace CarespaceFinanceHelper
             private set => TaxReceiptId = DataManager.ExtractParameter(value, TaxReceiptUrlFormat);
         }
 
+        private string PayMasterPaymentUrl => DataManager.Format(PayMasterPaymentUrlFormat, PayMasterPaymentId);
+
         public static string DigisellerSellUrlFormat;
         public static string DigisellerProductUrlFormat;
         public static string TaxReceiptUrlFormat;
+        public static string PayMasterPaymentUrlFormat;
 
         public Transaction() { }
 
@@ -40,7 +44,7 @@ namespace CarespaceFinanceHelper
             Date = datePay;
             _amount = price;
             Price = price;
-            _digisellerSellId = invoiceId;
+            DigisellerSellId = invoiceId;
             DigisellerProductId = productId;
         }
 
@@ -78,7 +82,8 @@ namespace CarespaceFinanceHelper
                 $"{Price}",
                 $"{DigisellerSellUrl}",
                 $"{DigisellerProductUrl}",
-                $"{TaxReceiptUrl}"
+                $"{TaxReceiptUrl}",
+                $"{PayMasterPaymentUrl}"
             };
         }
     }

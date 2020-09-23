@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CarespaceFinanceHelper.Dto.PayMaster;
 using CarespaceFinanceHelper.Providers;
 using Microsoft.Extensions.Configuration;
 
@@ -20,6 +21,7 @@ namespace CarespaceFinanceHelper.Console
             Transaction.DigisellerSellUrlFormat = config.DigisellerSellUrlFormat;
             Transaction.DigisellerProductUrlFormat = config.DigisellerProductUrlFormat;
             Transaction.TaxReceiptUrlFormat = config.TaxReceiptUrlFormat;
+            Transaction.PayMasterPaymentUrlFormat = config.PayMasterPaymentUrlFormat;
 
             System.Console.Write("Loading google transactions... ");
 
@@ -42,11 +44,25 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.WriteLine("done.");
 
+                System.Console.Write("Aquiring payments... ");
+
+                List<ListPaymentsFilterResult.Response.Payment> payments = DataManager.GetPayments(config.EarliestDate,
+                    DateTime.Today, config.PayMasterLogin, config.PayMasterPassword);
+
+                foreach (Transaction transaction in transactions)
+                {
+                    DataManager.FindPayment(transaction, payments, config.PayMasterPurposesFormats);
+                }
+
+                System.Console.WriteLine("done.");
+
                 System.Console.Write("Register taxes... ");
 
                 RegisterTaxes(config, customTransactions);
 
                 System.Console.WriteLine("done.");
+
+                System.Console.Write("Writing transactions to google... ");
 
                 DataManager.WriteValues(provider, config.GoogleFinalRange, transactions.OrderBy(t => t.Date), true);
             }

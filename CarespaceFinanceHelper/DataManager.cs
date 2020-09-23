@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CarespaceFinanceHelper.Dto.Digiseller;
+using CarespaceFinanceHelper.Dto.PayMaster;
 using CarespaceFinanceHelper.Dto.SelfWork;
 using CarespaceFinanceHelper.Providers;
 
@@ -105,8 +106,8 @@ namespace CarespaceFinanceHelper
         public static IEnumerable<Transaction> GetDigisellerSells(int sellerId, List<int> productIds,
             DateTime dateStat, DateTime dateFinish, string sellerSecret)
         {
-            string start = dateStat.ToString(DateTimeFormat);
-            string end = dateFinish.ToString(DateTimeFormat);
+            string start = dateStat.ToString(GoogleDateTimeFormat);
+            string end = dateFinish.ToString(GoogleDateTimeFormat);
             int page = 1;
             int totalPages;
             do
@@ -138,9 +139,47 @@ namespace CarespaceFinanceHelper
             return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId);
         }
 
-        private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+        private const string GoogleDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
 
         #endregion // Digiseller
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region PayMaster
+
+        public static List<ListPaymentsFilterResult.Response.Payment> GetPayments(DateTime periodFrom,
+            DateTime periodTo, string login, string password)
+        {
+            string start = periodFrom.ToString(PayMasterDateTimeFormat);
+            string end = periodTo.ToString(PayMasterDateTimeFormat);
+
+            ListPaymentsFilterResult result =
+                PayMaster.GetPayments(login, password, "", "", start, end, "", PayMasterState);
+
+            return result.ResponseInfo.Payments;
+        }
+
+        public static void FindPayment(Transaction transaction,
+            IEnumerable<ListPaymentsFilterResult.Response.Payment> payments, IEnumerable<string> purposesFormats)
+        {
+            if (!transaction.DigisellerSellId.HasValue || transaction.PayMasterPaymentId.HasValue)
+            {
+                return;
+            }
+
+            IEnumerable<string> purposes =
+                purposesFormats.Select(f => string.Format(f, transaction.DigisellerSellId.Value));
+
+            ListPaymentsFilterResult.Response.Payment payment =
+                payments.SingleOrDefault(p => purposes.Contains(p.Purpose));
+
+            transaction.PayMasterPaymentId = payment?.PaymentId;
+        }
+
+        private const string PayMasterDateTimeFormat = "yyyy-MM-dd";
+        private const string PayMasterState = "COMPLETE";
+
+        #endregion // PayMaster
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

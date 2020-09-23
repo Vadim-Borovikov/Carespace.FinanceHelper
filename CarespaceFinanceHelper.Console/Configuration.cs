@@ -1,6 +1,7 @@
 ﻿// ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable CollectionNeverUpdated.Global
 
 using System;
 using System.Collections.Generic;
@@ -34,5 +35,10 @@ namespace CarespaceFinanceHelper.Console
         public string TaxPaymentType { get; set; }
         public string TaxProductNameFormat { get; set; }
         public string TaxReceiptUrlFormat { get; set; }
+
+        public string PayMasterPaymentUrlFormat { get; set; }
+        public string PayMasterLogin { get; set; }
+        public string PayMasterPassword { get; set; }
+        public List<string> PayMasterPurposesFormats { get; set; }
     }
 }
