@@ -5,6 +5,12 @@ namespace CarespaceFinanceHelper
 {
     public sealed class Transaction : ILoadable, ISavable
     {
+        internal enum PayMethod
+        {
+            BankCard,
+            Sbp
+        }
+
         // Common URL formats
         public static string DigisellerSellUrlFormat;
         public static string DigisellerProductUrlFormat;
@@ -20,13 +26,14 @@ namespace CarespaceFinanceHelper
         internal int? DigisellerProductId { get; private set; }
         internal string TaxReceiptId;
         internal int? PayMasterPaymentId;
+        private PayMethod? _payMethod;
 
         public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
 
         public Transaction() { }
 
         internal Transaction(string productName, DateTime datePay, decimal price, int digisellerSellId,
-            int digisellerProductId)
+            int digisellerProductId, PayMethod payMethod)
         {
             Name = productName;
             Date = datePay;
@@ -34,6 +41,7 @@ namespace CarespaceFinanceHelper
             Price = price;
             DigisellerSellId = digisellerSellId;
             DigisellerProductId = digisellerProductId;
+            _payMethod = payMethod;
         }
 
         public void Load(IList<object> values)
@@ -58,11 +66,13 @@ namespace CarespaceFinanceHelper
 
             DigisellerProductId = values.ToInt(4);
 
-            DigisellerSellId = values.ToInt(5);
+            _payMethod = values.ToPayMathod(5);
 
-            PayMasterPaymentId = values.ToInt(6);
+            DigisellerSellId = values.ToInt(6);
 
-            TaxReceiptId = values.ToString(7);
+            PayMasterPaymentId = values.ToInt(7);
+
+            TaxReceiptId = values.ToString(8);
         }
 
         public IList<object> Save()
@@ -74,6 +84,7 @@ namespace CarespaceFinanceHelper
                 $"{_amount}",
                 $"{Price}",
                 $"{DataManager.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId)}",
+                $"{_payMethod}",
                 $"{DataManager.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId)}",
                 $"{DataManager.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId)}",
                 $"{DataManager.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId)}"

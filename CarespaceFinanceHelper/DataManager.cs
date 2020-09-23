@@ -40,6 +40,10 @@ namespace CarespaceFinanceHelper
         public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
         internal static int? ToInt(this IList<object> values, int index) => Extract(values, index, ToInt);
         public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
+        internal static Transaction.PayMethod? ToPayMathod(this IList<object> values, int index)
+        {
+            return Extract(values, index, ToPayMathod);
+        }
 
         private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
         {
@@ -60,6 +64,10 @@ namespace CarespaceFinanceHelper
                 default:
                     return null;
             }
+        }
+        private static Transaction.PayMethod? ToPayMathod(object o)
+        {
+            return Enum.TryParse(o?.ToString(), out Transaction.PayMethod p) ? (Transaction.PayMethod?)p : null;
         }
 
         private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
@@ -171,7 +179,19 @@ namespace CarespaceFinanceHelper
 
         private static Transaction CreateTransaction(SellsResult.Sell sell)
         {
-            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId);
+            Transaction.PayMethod payMethod;
+            switch (sell.PayMethodInfo)
+            {
+                case SellsResult.Sell.PayMethod.BankCard:
+                    payMethod = Transaction.PayMethod.BankCard;
+                    break;
+                case SellsResult.Sell.PayMethod.Sbp:
+                    payMethod = Transaction.PayMethod.Sbp;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId, payMethod);
         }
 
         private const string GoogleDateTimeFormat = "yyyy-MM-dd HH:mm:ss";
