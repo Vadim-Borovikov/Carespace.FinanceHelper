@@ -45,7 +45,7 @@ namespace CarespaceFinanceHelper.Console
                 System.Console.Write("Loading digiseller sells... ");
 
                 DateTime dateStart = transactions.Select(o => o.Date).Min().AddDays(-1);
-                DateTime dateEnd = DateTime.Today;
+                DateTime dateEnd = DateTime.Today.AddDays(1);
 
                 IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerId,
                     config.DigisellerProductIds, dateStart, dateEnd, config.DigisellerApiGuid, oldTransactions);
