@@ -44,23 +44,32 @@ namespace CarespaceFinanceHelper.Console
 
                 System.Console.Write("Loading digiseller sells... ");
 
+                DateTime dateStart = transactions.Select(o => o.Date).Min().AddDays(-1);
+                DateTime dateEnd = DateTime.Today;
+
                 IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerId,
-                    config.DigisellerProductIds, DateTime.Today, config.DigisellerApiGuid, oldTransactions);
+                    config.DigisellerProductIds, dateStart, dateEnd, config.DigisellerApiGuid, oldTransactions);
                 transactions.AddRange(newSells);
 
                 System.Console.WriteLine("done.");
 
-                System.Console.Write("Aquiring payments... ");
-
-                List<ListPaymentsFilterResult.Response.Payment> payments = DataManager.GetPayments(config.EarliestDate,
-                    DateTime.Today, config.PayMasterLogin, config.PayMasterPassword);
-
-                foreach (Transaction transaction in transactions)
+                List<Transaction> needPayment = transactions.Where(t => t.NeedPaynemt).ToList();
+                if (needPayment.Any())
                 {
-                    DataManager.FindPayment(transaction, payments, config.PayMasterPurposesFormats);
-                }
+                    System.Console.Write("Aquiring payments... ");
 
-                System.Console.WriteLine("done.");
+                    dateStart = needPayment.Select(o => o.Date).Min();
+                    dateEnd = needPayment.Select(o => o.Date).Max().AddDays(1);
+                    List<ListPaymentsFilterResult.Response.Payment> payments =
+                        DataManager.GetPayments(dateStart, dateEnd, config.PayMasterLogin, config.PayMasterPassword);
+
+                    foreach (Transaction transaction in needPayment)
+                    {
+                        DataManager.FindPayment(transaction, payments, config.PayMasterPurposesFormats);
+                    }
+
+                    System.Console.WriteLine("done.");
+                }
 
                 System.Console.Write("Register taxes... ");
 

@@ -122,10 +122,8 @@ namespace CarespaceFinanceHelper
         #region Digiseller
 
         public static IEnumerable<Transaction> GetNewDigisellerSells(int sellerId, List<int> productIds,
-            DateTime dateFinish, string sellerSecret, IList<Transaction> oldTransactions)
+            DateTime dateStart, DateTime dateFinish, string sellerSecret, IEnumerable<Transaction> oldTransactions)
         {
-            DateTime dateStart = oldTransactions.Select(o => o.Date).Min().AddDays(-1);
-
             IEnumerable<SellsResult.Sell> sells =
                 GetDigisellerSells(sellerId, productIds, dateStart, dateFinish, sellerSecret);
 

@@ -21,16 +21,19 @@ namespace CarespaceFinanceHelper
         internal string TaxReceiptId;
         internal int? PayMasterPaymentId;
 
+        public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
+
         public Transaction() { }
 
-        internal Transaction(string productName, DateTime datePay, decimal price, int invoiceId, int productId)
+        internal Transaction(string productName, DateTime datePay, decimal price, int digisellerSellId,
+            int digisellerProductId)
         {
             Name = productName;
             Date = datePay;
             _amount = price;
             Price = price;
-            DigisellerSellId = invoiceId;
-            DigisellerProductId = productId;
+            DigisellerSellId = digisellerSellId;
+            DigisellerProductId = digisellerProductId;
         }
 
         public void Load(IList<object> values)
