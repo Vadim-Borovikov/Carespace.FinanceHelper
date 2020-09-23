@@ -21,28 +21,6 @@ namespace CarespaceFinanceHelper
         internal string TaxReceiptId;
         internal int? PayMasterPaymentId;
 
-        // URL readers-writers
-        private string DigisellerSellUrl
-        {
-            get => DataManager.Format(DigisellerSellUrlFormat, DigisellerSellId);
-            set => DigisellerSellId = DataManager.ExtractIntParameter(value, DigisellerSellUrlFormat);
-        }
-        private string DigisellerProductUrl
-        {
-            get => DataManager.Format(DigisellerProductUrlFormat, DigisellerProductId);
-            set => DigisellerProductId = DataManager.ExtractIntParameter(value, DigisellerProductUrlFormat);
-        }
-        private string TaxReceiptUrl
-        {
-            get => DataManager.Format(TaxReceiptUrlFormat, TaxReceiptId);
-            set => TaxReceiptId = DataManager.ExtractParameter(value, TaxReceiptUrlFormat);
-        }
-        private string PayMasterPaymentUrl
-        {
-            get => DataManager.Format(PayMasterPaymentUrlFormat, PayMasterPaymentId);
-            set => PayMasterPaymentId = DataManager.ExtractIntParameter(value, PayMasterPaymentUrlFormat);
-        }
-
         public Transaction() { }
 
         internal Transaction(string productName, DateTime datePay, decimal price, int invoiceId, int productId)
@@ -75,13 +53,13 @@ namespace CarespaceFinanceHelper
 
             Price = values.ToDecimal(3);
 
-            DigisellerProductUrl = values.ToString(4);
+            DigisellerProductId = values.ToInt(4);
 
-            DigisellerSellUrl = values.ToString(5);
+            DigisellerSellId = values.ToInt(5);
 
-            PayMasterPaymentUrl = values.ToString(6);
+            PayMasterPaymentId = values.ToInt(6);
 
-            TaxReceiptUrl = values.ToString(7);
+            TaxReceiptId = values.ToString(7);
         }
 
         public IList<object> Save()
@@ -92,10 +70,10 @@ namespace CarespaceFinanceHelper
                 $"{Date:d MMMM yyyy}",
                 $"{_amount}",
                 $"{Price}",
-                $"{DigisellerProductUrl}",
-                $"{DigisellerSellUrl}",
-                $"{PayMasterPaymentUrl}",
-                $"{TaxReceiptUrl}"
+                $"{DataManager.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId)}",
+                $"{DataManager.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId)}",
+                $"{DataManager.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId)}",
+                $"{DataManager.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId)}"
             };
         }
     }

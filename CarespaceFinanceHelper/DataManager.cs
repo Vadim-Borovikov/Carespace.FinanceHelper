@@ -38,6 +38,7 @@ namespace CarespaceFinanceHelper
             return Extract(values, index, o => o?.ToString());
         }
         public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
+        internal static int? ToInt(this IList<object> values, int index) => Extract(values, index, ToInt);
         public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
 
         private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
@@ -47,6 +48,7 @@ namespace CarespaceFinanceHelper
         }
 
         private static DateTime? ToDateTime(object o) => o is long l ? (DateTime?) DateTime.FromOADate(l) : null;
+        private static int? ToInt(object o) => int.TryParse(o?.ToString(), out int i) ? (int?) i : null;
         private static decimal? ToDecimal(object o)
         {
             switch (o)
@@ -242,10 +244,17 @@ namespace CarespaceFinanceHelper
             return value.Substring(prefixLength, value.Length - prefixLength - postfixLenght);
         }
 
-        internal static string Format(string format, object parameter)
+        internal static string GetHyperlink(string urlFormat, object parameter)
         {
-            return parameter == null ? null : string.Format(format, parameter);
+            if (string.IsNullOrWhiteSpace(parameter?.ToString()))
+            {
+                return null;
+            }
+            string url = string.Format(urlFormat, parameter);
+            return string.Format(HyperlinkFormat, url, parameter);
         }
+
+        private const string HyperlinkFormat = "=HYPERLINK(\"{0}\";\"{1}\")";
 
         #endregion // Common
     }
