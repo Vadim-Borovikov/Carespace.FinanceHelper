@@ -269,13 +269,17 @@ namespace CarespaceFinanceHelper
                 }
 
                 // Ilya
-                decimal baseShare = Round(amount / 3);
-                decimal beforeLimit = Math.Min(baseShare, ilyaShareLimit - ilyaTotal);
-                decimal afterLimit = Math.Min(0, Round(ilyaShareAfterLimit * (baseShare - beforeLimit)));
-                decimal ilyaShare = beforeLimit + afterLimit;
-                ilyaTotal += ilyaShare;
-                transaction.IlyaShare = ilyaShare;
-                amount -= ilyaShare;
+                decimal beforeLimit = Math.Max(0, ilyaShareLimit - ilyaTotal);
+                if ((amount > 0) || (beforeLimit > 0))
+                {
+                    decimal baseShare = Round(amount / 3);
+                    decimal beforeLimitPart = Math.Min(baseShare, beforeLimit);
+                    decimal afterLimitPart = Math.Max(0, Round(ilyaShareAfterLimit * (baseShare - beforeLimitPart)));
+                    decimal ilyaShare = beforeLimitPart + afterLimitPart;
+                    ilyaTotal += ilyaShare;
+                    transaction.IlyaShare = ilyaShare;
+                    amount -= ilyaShare;
+                }
 
                 // Rita
                 decimal ritaShare = Round(amount / 2);
