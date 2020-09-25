@@ -20,7 +20,6 @@ namespace CarespaceFinanceHelper.Console
         public string DigisellerProductUrlFormat { get; set; }
         public string DigisellerSellUrlFormat { get; set; }
         public int DigisellerId { get; set; }
-        public List<int> DigisellerProductIds { get; set; }
         public string DigisellerApiGuid { get; set; }
 
         public string TaxUserAgent { get; set; }
@@ -42,7 +41,6 @@ namespace CarespaceFinanceHelper.Console
         public decimal DigisellerFeePercent { get; set; }
         public Dictionary<Transaction.PayMethod, decimal> PayMasterFeePercents { get; set; }
 
-        public decimal IlyaShareLimit { get; set; }
-        public decimal IlyaShareAfterLimit { get; set; }
+        public Dictionary<string, List<Share>> Shares { get; set; }
     }
 }

@@ -47,8 +47,9 @@ namespace CarespaceFinanceHelper.Console
                 DateTime dateStart = transactions.Select(o => o.Date).Min().AddDays(-1);
                 DateTime dateEnd = DateTime.Today.AddDays(1);
 
-                IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerId,
-                    config.DigisellerProductIds, dateStart, dateEnd, config.DigisellerApiGuid, oldTransactions);
+                List<int> productIds = config.Shares.Keys.Where(k => k != "None").Select(int.Parse).ToList();
+                IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerId, productIds,
+                    dateStart, dateEnd, config.DigisellerApiGuid, oldTransactions);
                 transactions.AddRange(newSells);
 
                 System.Console.WriteLine("done.");
@@ -56,7 +57,7 @@ namespace CarespaceFinanceHelper.Console
                 System.Console.Write("Calculating shares... ");
 
                 DataManager.CalculateShares(transactions, config.TaxFeePercent, config.DigisellerFeePercent,
-                    config.PayMasterFeePercents, config.IlyaShareLimit, config.IlyaShareAfterLimit);
+                    config.PayMasterFeePercents, config.Shares);
 
                 System.Console.WriteLine("done.");
 

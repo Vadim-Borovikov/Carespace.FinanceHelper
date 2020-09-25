@@ -234,9 +234,9 @@ namespace CarespaceFinanceHelper
 
         public static void CalculateShares(IEnumerable<Transaction> transactions, decimal taxFeePercent,
             decimal digisellerFeePercent, Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents,
-            decimal ilyaShareLimit, decimal ilyaShareAfterLimit)
+            Dictionary<string, List<Share>> shares)
         {
-            decimal ilyaTotal = 0;
+            var totals = new Dictionary<string, decimal>();
             foreach (Transaction transaction in transactions)
             {
                 decimal amount = transaction.Amount;
@@ -268,26 +268,25 @@ namespace CarespaceFinanceHelper
                     }
                 }
 
-                // Ilya
-                decimal beforeLimit = Math.Max(0, ilyaShareLimit - ilyaTotal);
-                if ((amount > 0) || (beforeLimit > 0))
+                string product = transaction.DigisellerProductId?.ToString() ?? NoProductSharesKey;
+                foreach (Share share in shares[product])
                 {
-                    decimal baseShare = Round(amount / 3);
-                    decimal beforeLimitPart = Math.Min(baseShare, beforeLimit);
-                    decimal afterLimitPart = Math.Max(0, Round(ilyaShareAfterLimit * (baseShare - beforeLimitPart)));
-                    decimal ilyaShare = beforeLimitPart + afterLimitPart;
-                    ilyaTotal += ilyaShare;
-                    transaction.IlyaShare = ilyaShare;
-                    amount -= ilyaShare;
+                    if (!transaction.Shares.ContainsKey(share.Agent))
+                    {
+                        transaction.Shares.Add(share.Agent, 0);
+                    }
+
+                    if (!totals.ContainsKey(share.Agent))
+                    {
+                        totals.Add(share.Agent, 0);
+                    }
+
+                    decimal value = Round(share.Calculate(amount, totals[share.Agent]));
+
+                    transaction.Shares[share.Agent] += value;
+                    totals[share.Agent] += value;
+                    amount -= value;
                 }
-
-                // Rita
-                decimal ritaShare = Round(amount / 2);
-                transaction.RitaShare = ritaShare;
-                amount -= ritaShare;
-
-                // Dima
-                transaction.DimaShare = amount;
             }
         }
 
@@ -326,6 +325,7 @@ namespace CarespaceFinanceHelper
         private static decimal Round(decimal d) => Math.Round(d, 2);
 
         private const string HyperlinkFormat = "=HYPERLINK(\"{0}\";\"{1}\")";
+        private const string NoProductSharesKey = "None";
 
         #endregion // Common
     }

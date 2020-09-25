@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CarespaceFinanceHelper
 {
@@ -30,9 +31,7 @@ namespace CarespaceFinanceHelper
         internal decimal? DigisellerFee;
         internal decimal? PayMasterFee;
         internal decimal? Tax;
-        internal decimal? IlyaShare;
-        internal decimal? RitaShare;
-        internal decimal? DimaShare;
+        internal readonly SortedDictionary<string, decimal?> Shares = new SortedDictionary<string, decimal?>();
 
         public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
 
@@ -83,7 +82,7 @@ namespace CarespaceFinanceHelper
 
         public IList<object> Save()
         {
-            return new List<object>
+            var result = new List<object>
             {
                 Name,
                 $"{Date:d MMMM yyyy}",
@@ -96,11 +95,12 @@ namespace CarespaceFinanceHelper
                 $"{DataManager.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId)}",
                 $"{DigisellerFee}",
                 $"{PayMasterFee}",
-                $"{Tax}",
-                $"{IlyaShare}",
-                $"{RitaShare}",
-                $"{DimaShare}"
+                $"{Tax}"
             };
+
+            result.AddRange(Shares.Values.Select(v => $"{v}"));
+
+            return result;
         }
     }
 }
