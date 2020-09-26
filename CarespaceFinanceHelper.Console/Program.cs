@@ -23,6 +23,13 @@ namespace CarespaceFinanceHelper.Console
             Transaction.TaxReceiptUrlFormat = config.TaxReceiptUrlFormat;
             Transaction.PayMasterPaymentUrlFormat = config.PayMasterPaymentUrlFormat;
 
+            Transaction.Agents = config.Shares.Values
+                .SelectMany(s => s)
+                .Select(s => s.Agent)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
             System.Console.Write("Loading google transactions... ");
 
             var transactions = new List<Transaction>();

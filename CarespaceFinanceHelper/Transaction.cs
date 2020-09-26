@@ -18,6 +18,8 @@ namespace CarespaceFinanceHelper
         public static string TaxReceiptUrlFormat;
         public static string PayMasterPaymentUrlFormat;
 
+        public static List<string> Agents;
+
         // Data
         internal string Name { get; private set; }
         public DateTime Date { get; private set; }
@@ -31,7 +33,7 @@ namespace CarespaceFinanceHelper
         internal decimal? DigisellerFee;
         internal decimal? PayMasterFee;
         internal decimal? Tax;
-        internal readonly SortedDictionary<string, decimal?> Shares = new SortedDictionary<string, decimal?>();
+        internal readonly Dictionary<string, decimal> Shares = new Dictionary<string, decimal>();
 
         public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
 
@@ -97,8 +99,7 @@ namespace CarespaceFinanceHelper
                 $"{PayMasterFee}",
                 $"{Tax}"
             };
-
-            result.AddRange(Shares.Values.Select(v => $"{v}"));
+            result.AddRange(Agents.Select(a => Shares.ContainsKey(a) ? $"{Shares[a]}" : ""));
 
             return result;
         }
