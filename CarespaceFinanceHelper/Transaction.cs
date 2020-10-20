@@ -25,6 +25,7 @@ namespace CarespaceFinanceHelper
         public DateTime Date { get; private set; }
         internal decimal Amount { get; private set; }
         internal decimal? Price { get; private set; }
+        private string PromoCode { get; set; }
         internal int? DigisellerSellId { get; private set; }
         internal int? DigisellerProductId { get; private set; }
         internal string TaxReceiptId;
@@ -40,7 +41,7 @@ namespace CarespaceFinanceHelper
         public Transaction() { }
 
         internal Transaction(string productName, DateTime datePay, decimal price, int digisellerSellId,
-            int digisellerProductId, PayMethod payMethod)
+            int digisellerProductId, PayMethod payMethod, string promoCode)
         {
             Name = productName;
             Date = datePay;
@@ -49,6 +50,7 @@ namespace CarespaceFinanceHelper
             DigisellerSellId = digisellerSellId;
             DigisellerProductId = digisellerProductId;
             PayMethodInfo = payMethod;
+            PromoCode = promoCode;
         }
 
         public void Load(IList<object> values)
@@ -71,15 +73,17 @@ namespace CarespaceFinanceHelper
 
             Price = values.ToDecimal(3);
 
-            DigisellerProductId = values.ToInt(4);
+            PromoCode = values.ToString(4);
 
-            PayMethodInfo = values.ToPayMathod(5);
+            DigisellerProductId = values.ToInt(5);
 
-            DigisellerSellId = values.ToInt(6);
+            PayMethodInfo = values.ToPayMathod(6);
 
-            PayMasterPaymentId = values.ToInt(7);
+            DigisellerSellId = values.ToInt(7);
 
-            TaxReceiptId = values.ToString(8);
+            PayMasterPaymentId = values.ToInt(8);
+
+            TaxReceiptId = values.ToString(9);
         }
 
         public IList<object> Save()
@@ -90,6 +94,7 @@ namespace CarespaceFinanceHelper
                 $"{Date:d MMMM yyyy}",
                 $"{Amount}",
                 $"{Price}",
+                $"{PromoCode}",
                 $"{DataManager.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId)}",
                 $"{PayMethodInfo}",
                 $"{DataManager.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId)}",

@@ -55,8 +55,10 @@ namespace CarespaceFinanceHelper.Console
                 DateTime dateEnd = DateTime.Today.AddDays(1);
 
                 List<int> productIds = config.Shares.Keys.Where(k => k != "None").Select(int.Parse).ToList();
-                IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerId, productIds,
-                    dateStart, dateEnd, config.DigisellerApiGuid, oldTransactions);
+                IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerLogin,
+                    config.DigisellerPassword, config.DigisellerId, productIds, dateStart, dateEnd,
+                    config.DigisellerApiGuid, oldTransactions);
+
                 transactions.AddRange(newSells);
 
                 System.Console.WriteLine("done.");

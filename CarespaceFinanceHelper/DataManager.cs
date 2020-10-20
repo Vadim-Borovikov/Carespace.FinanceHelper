@@ -5,6 +5,7 @@ using CarespaceFinanceHelper.Dto.Digiseller;
 using CarespaceFinanceHelper.Dto.PayMaster;
 using CarespaceFinanceHelper.Dto.SelfWork;
 using CarespaceFinanceHelper.Providers;
+using TokenResult = CarespaceFinanceHelper.Dto.Digiseller.TokenResult;
 
 namespace CarespaceFinanceHelper
 {
@@ -111,7 +112,7 @@ namespace CarespaceFinanceHelper
         public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
             string appVersion, string refreshToken)
         {
-            TokenResult result = SelfWork.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
+            Dto.SelfWork.TokenResult result = SelfWork.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
             return result.Token;
         }
 
@@ -121,8 +122,9 @@ namespace CarespaceFinanceHelper
 
         #region Digiseller
 
-        public static IEnumerable<Transaction> GetNewDigisellerSells(int sellerId, List<int> productIds,
-            DateTime dateStart, DateTime dateFinish, string sellerSecret, IEnumerable<Transaction> oldTransactions)
+        public static IEnumerable<Transaction> GetNewDigisellerSells(string login, string password, int sellerId,
+            List<int> productIds, DateTime dateStart, DateTime dateFinish, string sellerSecret,
+            IEnumerable<Transaction> oldTransactions)
         {
             IEnumerable<SellsResult.Sell> sells =
                 GetDigisellerSells(sellerId, productIds, dateStart, dateFinish, sellerSecret);
@@ -132,9 +134,13 @@ namespace CarespaceFinanceHelper
                 .Select(t => t.DigisellerSellId.Value);
 
             IEnumerable<SellsResult.Sell> newSells = sells.Where(s => !oldSellIds.Contains(s.InvoiceId));
+
+            string token = GetToken(login, password, sellerSecret);
+
             foreach (SellsResult.Sell sell in newSells)
             {
-                yield return CreateTransaction(sell);
+                string promoCode = GetPromoCode(sell.InvoiceId, token);
+                yield return CreateTransaction(sell, promoCode);
             }
         }
 
@@ -169,7 +175,7 @@ namespace CarespaceFinanceHelper
             return string.Format(taxNameFormat, productName);
         }
 
-        private static Transaction CreateTransaction(SellsResult.Sell sell)
+        private static Transaction CreateTransaction(SellsResult.Sell sell, string promoCode)
         {
             Transaction.PayMethod payMethod;
             switch (sell.PayMethodInfo)
@@ -183,7 +189,19 @@ namespace CarespaceFinanceHelper
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId, payMethod);
+            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId, payMethod, promoCode);
+        }
+
+        private static string GetToken(string login, string password, string sellerSecret)
+        {
+            TokenResult result = Digiseller.GetToken(login, password, sellerSecret);
+            return result.Token;
+        }
+
+        private static string GetPromoCode(int invoiceId, string token)
+        {
+            PurchaseResult result = Digiseller.GetPurchase(invoiceId, token);
+            return result.Info.PromoCode;
         }
 
         private const string GoogleDateTimeFormat = "yyyy-MM-dd HH:mm:ss";

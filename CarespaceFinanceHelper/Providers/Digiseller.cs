@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using CarespaceFinanceHelper.Dto.Digiseller;
@@ -40,6 +41,30 @@ namespace CarespaceFinanceHelper.Providers
             return RestHelper.CallPostMethod<SellsResult>(ApiProvider, GetSellsMethod, dto, Settings);
         }
 
+        public static TokenResult GetToken(string login, string password, string sellerSecret)
+        {
+            long timestamp = DateTime.Now.ToFileTime();
+            string sign = Hash($"{password}{sellerSecret}{timestamp}");
+            var dto = new TokenRequest
+            {
+                Login = login,
+                Timestamp = timestamp,
+                Sign = sign
+            };
+
+            return RestHelper.CallPostMethod<TokenResult>(ApiProvider, GetTokenMethod, dto, Settings);
+        }
+
+        public static PurchaseResult GetPurchase(int invoiceId, string token)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                { "token", token }
+            };
+
+            return RestHelper.CallGetMethod<PurchaseResult>(ApiProvider, $"{GetPurchaseMethod}{invoiceId}", parameters);
+        }
+
         private static string Hash(string input)
         {
             byte[] utf8 = Encoding.UTF8.GetBytes(input);
@@ -67,6 +92,8 @@ namespace CarespaceFinanceHelper.Providers
         private const string ApiProvider = "https://api.digiseller.ru/";
         private const string ProductsInfoMethod = "api/products/info";
         private const string GetSellsMethod = "api/seller-sells";
+        private const string GetTokenMethod = "api/apilogin";
+        private const string GetPurchaseMethod = "api/purchase/info/";
 
         private const int RowsPerPage = 2000;
         private const int Returned = 1;

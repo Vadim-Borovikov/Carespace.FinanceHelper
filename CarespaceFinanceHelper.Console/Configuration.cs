@@ -21,6 +21,8 @@ namespace CarespaceFinanceHelper.Console
         public string DigisellerSellUrlFormat { get; set; }
         public int DigisellerId { get; set; }
         public string DigisellerApiGuid { get; set; }
+        public string DigisellerLogin { get; set; }
+        public string DigisellerPassword { get; set; }
 
         public string TaxUserAgent { get; set; }
         public string TaxSourceDeviceId { get; set; }
