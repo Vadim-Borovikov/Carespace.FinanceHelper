@@ -9,6 +9,9 @@ namespace CarespaceFinanceHelper
         public string Agent { get; set; }
 
         [JsonProperty]
+        public string Promo { get; set; }
+
+        [JsonProperty]
         public decimal? Limit { get; set; }
 
         [JsonProperty]
@@ -17,8 +20,17 @@ namespace CarespaceFinanceHelper
         [JsonProperty]
         public decimal ValueAfterLimit { get; set; }
 
-        internal decimal Calculate(decimal amount, decimal total)
+        internal decimal Calculate(decimal amount, decimal? net, decimal total, string promo)
         {
+            if (!string.IsNullOrWhiteSpace(Promo))
+            {
+                if ((promo != Promo) || !net.HasValue)
+                {
+                    return 0;
+                }
+                amount = net.Value;
+            }
+
             decimal value = amount * Value;
 
             if (!Limit.HasValue)

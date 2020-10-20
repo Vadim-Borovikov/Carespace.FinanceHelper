@@ -25,7 +25,7 @@ namespace CarespaceFinanceHelper
         public DateTime Date { get; private set; }
         internal decimal Amount { get; private set; }
         internal decimal? Price { get; private set; }
-        private string PromoCode { get; set; }
+        internal string PromoCode { get; set; }
         internal int? DigisellerSellId { get; private set; }
         internal int? DigisellerProductId { get; private set; }
         internal string TaxReceiptId;

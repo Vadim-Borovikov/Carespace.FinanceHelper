@@ -259,6 +259,7 @@ namespace CarespaceFinanceHelper
             {
                 decimal amount = transaction.Amount;
 
+                decimal? net = null;
                 if (transaction.Price.HasValue)
                 {
                     decimal price = transaction.Price.Value;
@@ -267,6 +268,8 @@ namespace CarespaceFinanceHelper
                     decimal tax = Round(price * taxFeePercent);
                     transaction.Tax = tax;
                     amount -= transaction.Tax.Value;
+
+                    net = amount;
 
                     if (transaction.DigisellerSellId.HasValue)
                     {
@@ -299,7 +302,7 @@ namespace CarespaceFinanceHelper
                         totals.Add(share.Agent, 0);
                     }
 
-                    decimal value = Round(share.Calculate(amount, totals[share.Agent]));
+                    decimal value = Round(share.Calculate(amount, net, totals[share.Agent], transaction.PromoCode));
 
                     transaction.Shares[share.Agent] += value;
                     totals[share.Agent] += value;
