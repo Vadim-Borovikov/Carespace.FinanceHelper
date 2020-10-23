@@ -259,5 +259,5 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/CarespaceFinanceHelper.Tests/appsettings.json
-/CarespaceFinanceHelper.Console/appsettings.override.json
+/Carespace.FinanceHelper.Tests/appsettings.json
+/Carespace.FinanceHelper.Console/appsettings.override.json
