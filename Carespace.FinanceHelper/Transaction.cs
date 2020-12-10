@@ -57,19 +57,9 @@ namespace Carespace.FinanceHelper
         {
             Name = values.ToString(0);
 
-            DateTime? date = values.ToDateTime(1);
-            if (!date.HasValue)
-            {
-                throw new ArgumentNullException($"Empty date in \"{Name}\"");
-            }
-            Date = date.Value;
+            Date = values.ToDateTime(1) ?? throw new ArgumentNullException($"Empty date in \"{Name}\"");
 
-            decimal? amount = values.ToDecimal(2);
-            if (!amount.HasValue)
-            {
-                throw new ArgumentNullException($"Empty amount in \"{Name}\"");
-            }
-            Amount = amount.Value;
+            Amount = values.ToDecimal(2) ?? throw new ArgumentNullException($"Empty amount in \"{Name}\"");
 
             Price = values.ToDecimal(3);
 

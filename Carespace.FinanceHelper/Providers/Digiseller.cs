@@ -14,9 +14,9 @@ namespace Carespace.FinanceHelper.Providers
         {
             var parameters = new Dictionary<string, object>
             {
-                { "format", "json" },
-                { "transp", "cors" },
-                { "product_id", productId }
+                ["format"] = "json",
+                ["transp"] = "cors",
+                ["product_id"] = productId
             };
 
             return RestHelper.CallGetMethod<ProductResult>(ApiProvider, ProductsInfoMethod, parameters);
@@ -57,10 +57,7 @@ namespace Carespace.FinanceHelper.Providers
 
         public static PurchaseResult GetPurchase(int invoiceId, string token)
         {
-            var parameters = new Dictionary<string, object>
-            {
-                { "token", token }
-            };
+            var parameters = new Dictionary<string, object> { ["token"] = token };
 
             return RestHelper.CallGetMethod<PurchaseResult>(ApiProvider, $"{GetPurchaseMethod}{invoiceId}", parameters);
         }

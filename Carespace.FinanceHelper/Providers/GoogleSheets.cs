@@ -23,7 +23,7 @@ namespace Carespace.FinanceHelper.Providers
             _sheetId = sheetId;
         }
 
-        public void Dispose() { _service.Dispose(); }
+        public void Dispose() => _service.Dispose();
 
         internal IEnumerable<IList<object>> GetValues(string range, bool parseValues = false)
         {

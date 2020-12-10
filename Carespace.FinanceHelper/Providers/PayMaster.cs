@@ -17,12 +17,12 @@ namespace Carespace.FinanceHelper.Providers
 
             var parameters = new Dictionary<string, object>
             {
-                { "login", login },
-                { "nonce", nounce },
-                { "hash", hash },
-                { "periodFrom", periodFrom },
-                { "periodTo", periodTo },
-                { "state", state }
+                ["login"] = login,
+                ["nonce"] = nounce,
+                ["hash"] = hash,
+                ["periodFrom"] = periodFrom,
+                ["periodTo"] = periodTo,
+                ["state"] = state
             };
 
             return RestHelper.CallGetMethod<ListPaymentsFilterResult>(ApiProvider, GetPaymentsMethod, parameters);
