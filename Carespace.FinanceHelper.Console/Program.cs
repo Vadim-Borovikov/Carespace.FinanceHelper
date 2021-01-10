@@ -10,7 +10,7 @@ namespace Carespace.FinanceHelper.Console
 {
     internal static class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             System.Console.Write("Reading config... ");
 
