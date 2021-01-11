@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Carespace.FinanceHelper.Dto.PayMaster;
-using Carespace.FinanceHelper.Providers;
+using GoogleSheetsManager;
 using Microsoft.Extensions.Configuration;
 
 namespace Carespace.FinanceHelper.Console
@@ -34,14 +34,14 @@ namespace Carespace.FinanceHelper.Console
 
             var transactions = new List<Transaction>();
 
-            using (var provider = new GoogleSheets(config.GoogleCredentialsJson, config.GoogleSheetId))
+            using (var provider = new Provider(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 IList<Transaction> oldTransactions =
-                    DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
+                    GoogleSheetsManager.DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
                 transactions.AddRange(oldTransactions);
 
                 IList<Transaction> newCustomTransactions =
-                    DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange);
+                    GoogleSheetsManager.DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange);
                 if (newCustomTransactions != null)
                 {
                     transactions.AddRange(newCustomTransactions);
@@ -98,7 +98,8 @@ namespace Carespace.FinanceHelper.Console
 
                 System.Console.Write("Writing transactions to google... ");
 
-                DataManager.UpdateValues(provider, config.GoogleFinalRange, transactions.OrderBy(t => t.Date));
+                GoogleSheetsManager.DataManager.UpdateValues(provider, config.GoogleFinalRange,
+                    transactions.OrderBy(t => t.Date));
                 provider.ClearValues(config.GoogleCustomRange);
             }
 

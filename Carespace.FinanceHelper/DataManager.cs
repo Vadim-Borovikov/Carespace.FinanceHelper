@@ -6,6 +6,7 @@ using Carespace.FinanceHelper.Dto.PayMaster;
 using Carespace.FinanceHelper.Dto.SelfWork;
 using Carespace.FinanceHelper.Providers;
 using TokenResult = Carespace.FinanceHelper.Dto.Digiseller.TokenResult;
+using GoogleSheetsManager;
 
 namespace Carespace.FinanceHelper
 {
@@ -13,61 +14,14 @@ namespace Carespace.FinanceHelper
     {
         #region Google
 
-        public static IList<T> GetValues<T>(GoogleSheets provider, string range) where T : ILoadable, new()
-        {
-            IEnumerable<IList<object>> values = provider.GetValues(range, true);
-            return values?.Select(LoadValues<T>).ToList();
-        }
-
-        public static void UpdateValues<T>(GoogleSheets provider, string range, IEnumerable<T> values)
-            where T : ISavable
-        {
-            List<IList<object>> table = values.Select(v => v.Save()).ToList();
-            provider.UpdateValues(range, table);
-        }
-
-        public static string ToString(this IList<object> values, int index)
-        {
-            return Extract(values, index, o => o?.ToString());
-        }
-        public static DateTime? ToDateTime(this IList<object> values, int index) => Extract(values, index, ToDateTime);
-        internal static int? ToInt(this IList<object> values, int index) => Extract(values, index, ToInt);
-        public static decimal? ToDecimal(this IList<object> values, int index) => Extract(values, index, ToDecimal);
         internal static Transaction.PayMethod? ToPayMathod(this IList<object> values, int index)
         {
-            return Extract(values, index, ToPayMathod);
+            return values.Extract(index, ToPayMathod);
         }
 
-        private static T Extract<T>(this IList<object> values, int index, Func<object, T> cast)
-        {
-            object o = values.Count > index ? values[index] : null;
-            return cast(o);
-        }
-
-        private static DateTime? ToDateTime(object o) => o is long l ? (DateTime?) DateTime.FromOADate(l) : null;
-        private static int? ToInt(object o) => int.TryParse(o?.ToString(), out int i) ? (int?) i : null;
-        private static decimal? ToDecimal(object o)
-        {
-            switch (o)
-            {
-                case long l:
-                    return l;
-                case double d:
-                    return (decimal) d;
-                default:
-                    return null;
-            }
-        }
         private static Transaction.PayMethod? ToPayMathod(object o)
         {
             return Enum.TryParse(o?.ToString(), out Transaction.PayMethod p) ? (Transaction.PayMethod?)p : null;
-        }
-
-        private static T LoadValues<T>(IList<object> values) where T : ILoadable, new()
-        {
-            var instance = new T();
-            instance.Load(values);
-            return instance;
         }
 
         #endregion // Google
