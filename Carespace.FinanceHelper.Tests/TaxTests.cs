@@ -9,7 +9,7 @@ namespace Carespace.FinanceHelper.Tests
         public void TestGetToken()
         {
             Configuration config = Helper.GetConfig();
-            string token = DataManager.GetTaxToken(UserAgent, config.TaxSourceDeviceId, SourceType, AppVersion,
+            string token = Utils.GetTaxToken(UserAgent, config.TaxSourceDeviceId, SourceType, AppVersion,
                 config.TaxRefreshToken);
             Assert.IsFalse(string.IsNullOrEmpty(token));
         }

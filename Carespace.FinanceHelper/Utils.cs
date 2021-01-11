@@ -10,7 +10,7 @@ using GoogleSheetsManager;
 
 namespace Carespace.FinanceHelper
 {
-    public static class DataManager
+    public static class Utils
     {
         #region Google
 

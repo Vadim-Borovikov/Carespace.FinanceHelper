@@ -37,11 +37,11 @@ namespace Carespace.FinanceHelper.Console
             using (var provider = new Provider(config.GoogleCredentialsJson, config.GoogleSheetId))
             {
                 IList<Transaction> oldTransactions =
-                    GoogleSheetsManager.DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
+                    DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
                 transactions.AddRange(oldTransactions);
 
                 IList<Transaction> newCustomTransactions =
-                    GoogleSheetsManager.DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange);
+                    DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange);
                 if (newCustomTransactions != null)
                 {
                     transactions.AddRange(newCustomTransactions);
@@ -55,7 +55,7 @@ namespace Carespace.FinanceHelper.Console
                 DateTime dateEnd = DateTime.Today.AddDays(1);
 
                 List<int> productIds = config.Shares.Keys.Where(k => k != "None").Select(int.Parse).ToList();
-                IEnumerable<Transaction> newSells = DataManager.GetNewDigisellerSells(config.DigisellerLogin,
+                IEnumerable<Transaction> newSells = Utils.GetNewDigisellerSells(config.DigisellerLogin,
                     config.DigisellerPassword, config.DigisellerId, productIds, dateStart, dateEnd,
                     config.DigisellerApiGuid, oldTransactions);
 
@@ -65,7 +65,7 @@ namespace Carespace.FinanceHelper.Console
 
                 System.Console.Write("Calculating shares... ");
 
-                DataManager.CalculateShares(transactions, config.TaxFeePercent, config.DigisellerFeePercent,
+                Utils.CalculateShares(transactions, config.TaxFeePercent, config.DigisellerFeePercent,
                     config.PayMasterFeePercents, config.Shares);
 
                 System.Console.WriteLine("done.");
@@ -78,11 +78,11 @@ namespace Carespace.FinanceHelper.Console
                     dateStart = needPayment.Select(o => o.Date).Min();
                     dateEnd = needPayment.Select(o => o.Date).Max().AddDays(1);
                     List<ListPaymentsFilterResult.Response.Payment> payments =
-                        DataManager.GetPayments(dateStart, dateEnd, config.PayMasterLogin, config.PayMasterPassword);
+                        Utils.GetPayments(dateStart, dateEnd, config.PayMasterLogin, config.PayMasterPassword);
 
                     foreach (Transaction transaction in needPayment)
                     {
-                        DataManager.FindPayment(transaction, payments, config.PayMasterPurposesFormats);
+                        Utils.FindPayment(transaction, payments, config.PayMasterPurposesFormats);
                     }
 
                     System.Console.WriteLine("done.");
@@ -90,16 +90,15 @@ namespace Carespace.FinanceHelper.Console
 
                 System.Console.Write("Register taxes... ");
 
-                DataManager.RegisterTaxes(transactions, config.TaxUserAgent, config.TaxSourceDeviceId,
-                    config.TaxSourceType, config.TaxAppVersion, config.TaxRefreshToken, config.TaxIncomeType,
-                    config.TaxPaymentType, config.TaxProductNameFormat);
+                Utils.RegisterTaxes(transactions, config.TaxUserAgent, config.TaxSourceDeviceId, config.TaxSourceType,
+                    config.TaxAppVersion, config.TaxRefreshToken, config.TaxIncomeType, config.TaxPaymentType,
+                    config.TaxProductNameFormat);
 
                 System.Console.WriteLine("done.");
 
                 System.Console.Write("Writing transactions to google... ");
 
-                GoogleSheetsManager.DataManager.UpdateValues(provider, config.GoogleFinalRange,
-                    transactions.OrderBy(t => t.Date));
+                DataManager.UpdateValues(provider, config.GoogleFinalRange, transactions.OrderBy(t => t.Date));
                 provider.ClearValues(config.GoogleCustomRange);
             }
 

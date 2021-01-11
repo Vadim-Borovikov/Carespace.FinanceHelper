@@ -10,7 +10,7 @@ namespace Carespace.FinanceHelper.Tests
         {
             string s = string.Format(Format, Value);
 
-            string parameter = DataManager.ExtractParameter(s, Format);
+            string parameter = Utils.ExtractParameter(s, Format);
             Assert.AreEqual(Value.ToString(), parameter);
         }
 
@@ -19,7 +19,7 @@ namespace Carespace.FinanceHelper.Tests
         {
             string s = string.Format(Format, Value);
 
-            int? parameter = DataManager.ExtractIntParameter(s, Format);
+            int? parameter = Utils.ExtractIntParameter(s, Format);
             if (parameter.HasValue)
             {
                 Assert.AreEqual(Value, parameter.Value);
