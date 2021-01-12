@@ -35,14 +35,9 @@ namespace Carespace.FinanceHelper
             string paymentType, string nameFormat)
         {
             string token = null;
-            // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach (Transaction t in transactions)
+            foreach (Transaction t in transactions.Where(t => t.Price.HasValue
+                                                              && string.IsNullOrWhiteSpace(t.TaxReceiptId)))
             {
-                if (!t.Price.HasValue || !string.IsNullOrWhiteSpace(t.TaxReceiptId))
-                {
-                    continue;
-                }
-
                 if (token == null)
                 {
                     token = GetTaxToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
@@ -50,6 +45,7 @@ namespace Carespace.FinanceHelper
 
                 var service = new IncomeRequest.Service
                 {
+                    // ReSharper disable once PossibleInvalidOperationException
                     Amount = t.Price.Value,
                     Name = GetTaxName(t, nameFormat),
                     Quantity = 1
