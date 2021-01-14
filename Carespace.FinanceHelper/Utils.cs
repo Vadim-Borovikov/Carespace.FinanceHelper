@@ -16,7 +16,7 @@ namespace Carespace.FinanceHelper
 
         internal static Transaction.PayMethod? ToPayMathod(this IList<object> values, int index)
         {
-            return values.Extract(index, ToPayMathod);
+            return values.To(index, ToPayMathod);
         }
 
         private static Transaction.PayMethod? ToPayMathod(object o)
