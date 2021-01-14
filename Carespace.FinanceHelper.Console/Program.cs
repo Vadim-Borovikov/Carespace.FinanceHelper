@@ -34,7 +34,7 @@ namespace Carespace.FinanceHelper.Console
 
             var transactions = new List<Transaction>();
 
-            using (var provider = new Provider(config.GoogleCredentialsJson, config.GoogleSheetId))
+            using (var provider = new Provider(config.GoogleCredentialsJson, ApplicationName, config.GoogleSheetId))
             {
                 IList<Transaction> oldTransactions =
                     DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
@@ -114,5 +114,7 @@ namespace Carespace.FinanceHelper.Console
                 .Build()
                 .Get<Configuration>();
         }
+
+        private const string ApplicationName = "Carespace.FinanceHelper";
     }
 }
