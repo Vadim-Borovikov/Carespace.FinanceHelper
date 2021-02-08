@@ -14,7 +14,7 @@ namespace Carespace.FinanceHelper.Console
         {
             System.Console.Write("Reading config... ");
 
-            Configuration config = GetConfig();
+            Config config = GetConfig();
 
             System.Console.WriteLine("done.");
 
@@ -34,7 +34,7 @@ namespace Carespace.FinanceHelper.Console
 
             var transactions = new List<Transaction>();
 
-            using (var provider = new Provider(config.GoogleCredentialsJson, ApplicationName, config.GoogleSheetId))
+            using (var provider = new Provider(config.GoogleCredentialJson, ApplicationName, config.GoogleSheetId))
             {
                 IList<Transaction> oldTransactions =
                     DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
@@ -105,14 +105,14 @@ namespace Carespace.FinanceHelper.Console
             System.Console.WriteLine("done.");
         }
 
-        private static Configuration GetConfig()
+        private static Config GetConfig()
         {
             return new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile("appsettings.override.json") // Create appsettings.override.json for private settings
                 .Build()
-                .Get<Configuration>();
+                .Get<Config>();
         }
 
         private const string ApplicationName = "Carespace.FinanceHelper";

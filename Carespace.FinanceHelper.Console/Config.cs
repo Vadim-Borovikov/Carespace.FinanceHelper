@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace Carespace.FinanceHelper.Console
 {
-    internal sealed class Configuration
+    internal sealed class Config
     {
         [JsonProperty]
         public string GoogleSheetId { get; set; }
@@ -14,11 +14,9 @@ namespace Carespace.FinanceHelper.Console
         [JsonProperty]
         public string GoogleFinalRange { get; set; }
 
-
         [JsonProperty]
-        public Dictionary<string, string> GoogleCredentials { get; set; }
-        public string GoogleCredentialsJson => JsonConvert.SerializeObject(GoogleCredentials);
-
+        public Dictionary<string, string> GoogleCredential { get; set; }
+        public string GoogleCredentialJson => JsonConvert.SerializeObject(GoogleCredential);
 
         [JsonProperty]
         public string DigisellerProductUrlFormat { get; set; }
