@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Carespace.FinanceHelper.Dto.PayMaster;
+using Google.Apis.Sheets.v4;
 using GoogleSheetsManager;
 using Microsoft.Extensions.Configuration;
 
@@ -37,7 +38,8 @@ namespace Carespace.FinanceHelper.Console
             using (var provider = new Provider(config.GoogleCredentialJson, ApplicationName, config.GoogleSheetId))
             {
                 IList<Transaction> oldTransactions =
-                    DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange);
+                    DataManager.GetValues<Transaction>(provider, config.GoogleFinalRange,
+                        SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE);
                 transactions.AddRange(oldTransactions);
 
                 IList<Transaction> newCustomTransactions =
