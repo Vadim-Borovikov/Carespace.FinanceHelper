@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Carespace.FinanceHelper.Tests
 {
@@ -9,5 +10,11 @@ namespace Carespace.FinanceHelper.Tests
 
         [JsonProperty]
         public string TaxRefreshToken { get; set; }
+
+        [JsonProperty]
+        public Dictionary<Transaction.PayMethod, decimal> PayMasterFeePercents { get; set; }
+
+        [JsonProperty]
+        public Dictionary<string, List<Share>> Shares { get; set; }
     }
 }

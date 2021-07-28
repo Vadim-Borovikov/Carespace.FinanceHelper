@@ -35,9 +35,17 @@ namespace Carespace.FinanceHelper
         internal decimal? DigisellerFee;
         internal decimal? PayMasterFee;
         internal decimal? Tax;
-        internal readonly Dictionary<string, decimal> Shares = new Dictionary<string, decimal>();
+        public readonly Dictionary<string, decimal> Shares = new Dictionary<string, decimal>();
 
         public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
+
+        public Transaction(decimal amount, decimal price, int digisellerProductId, string promoCode = null)
+        {
+            Amount = amount;
+            Price = price;
+            DigisellerProductId = digisellerProductId;
+            PromoCode = promoCode;
+        }
 
         public Transaction() { }
 
