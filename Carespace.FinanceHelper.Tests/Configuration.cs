@@ -12,6 +12,12 @@ namespace Carespace.FinanceHelper.Tests
         public string TaxRefreshToken { get; set; }
 
         [JsonProperty]
+        public decimal TaxFeePercent { get; set; }
+
+        [JsonProperty]
+        public decimal DigisellerFeePercent { get; set; }
+
+        [JsonProperty]
         public Dictionary<Transaction.PayMethod, decimal> PayMasterFeePercents { get; set; }
 
         [JsonProperty]

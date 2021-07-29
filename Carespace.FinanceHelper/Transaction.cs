@@ -32,19 +32,22 @@ namespace Carespace.FinanceHelper
         internal string TaxReceiptId;
         internal int? PayMasterPaymentId;
         internal PayMethod? PayMethodInfo { get; private set; }
-        internal decimal? DigisellerFee;
-        internal decimal? PayMasterFee;
-        internal decimal? Tax;
+        public decimal? DigisellerFee;
+        public decimal? PayMasterFee;
+        public decimal? Tax;
         public readonly Dictionary<string, decimal> Shares = new Dictionary<string, decimal>();
 
         public bool NeedPaynemt => DigisellerSellId.HasValue && !PayMasterPaymentId.HasValue;
 
-        public Transaction(decimal amount, decimal price, int digisellerProductId, string promoCode = null)
+        public Transaction(decimal amount, decimal price, int digisellerProductId, string promoCode = null,
+            int? digiSellerSellId = null, PayMethod? payMethodInfo = null)
         {
             Amount = amount;
             Price = price;
             DigisellerProductId = digisellerProductId;
             PromoCode = promoCode;
+            DigisellerSellId = digiSellerSellId;
+            PayMethodInfo = payMethodInfo;
         }
 
         public Transaction() { }
