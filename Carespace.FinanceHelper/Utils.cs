@@ -233,7 +233,7 @@ namespace Carespace.FinanceHelper
                         {
                             throw new ArgumentNullException();
                         }
-                        decimal payMasterFee = Round(amount * payMasterFeePercents[transaction.PayMethodInfo.Value]);
+                        decimal payMasterFee = Round(price * payMasterFeePercents[transaction.PayMethodInfo.Value]);
                         transaction.PayMasterFee = payMasterFee;
                         amount -= payMasterFee;
                     }
