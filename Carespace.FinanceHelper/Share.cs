@@ -12,6 +12,9 @@ namespace Carespace.FinanceHelper
         public string Promo { get; set; }
 
         [JsonProperty]
+        public bool PromoForNet { get; set; } = true;
+
+        [JsonProperty]
         public decimal? Limit { get; set; }
 
         [JsonProperty]
@@ -24,11 +27,18 @@ namespace Carespace.FinanceHelper
         {
             if (!string.IsNullOrWhiteSpace(Promo))
             {
-                if ((promo != Promo) || !net.HasValue)
+                if (promo != Promo)
                 {
                     return 0;
                 }
-                amount = net.Value;
+                if (PromoForNet)
+                {
+                    if (!net.HasValue)
+                    {
+                        return 0;
+                    }
+                    amount = net.Value;
+                }
             }
 
             decimal value = amount * Value;
