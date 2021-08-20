@@ -43,7 +43,8 @@ namespace Carespace.FinanceHelper.Console
                 transactions.AddRange(oldTransactions);
 
                 IList<Transaction> newCustomTransactions =
-                    DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange);
+                    DataManager.GetValues<Transaction>(provider, config.GoogleCustomRange,
+                        SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE);
                 if (newCustomTransactions != null)
                 {
                     transactions.AddRange(newCustomTransactions);
