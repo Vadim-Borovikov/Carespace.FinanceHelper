@@ -14,6 +14,7 @@ namespace Carespace.FinanceHelper.Dto.Digiseller
                 [EnumMember(Value = "Bank Card")]
                 [JsonProperty]
                 BankCard,
+                [EnumMember(Value = "Faster Payments System")]
                 [JsonProperty]
                 Sbp
             }
