@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using GoogleSheetsManager;
 
 namespace Carespace.FinanceHelper
 {
     public sealed class Transaction : ILoadable, ISavable
     {
+        IList<string> ISavable.Titles => Titles;
+
         public enum PayMethod
         {
             BankCard,
@@ -65,50 +66,85 @@ namespace Carespace.FinanceHelper
             PromoCode = promoCode;
         }
 
-        public void Load(IList<object> values)
+        public void Load(IDictionary<string, object> valueSet)
         {
-            Name = values.ToString(0);
+            Name = valueSet[NameTitle]?.ToString();
 
-            Date = values.ToDateTime(1) ?? throw new ArgumentNullException($"Empty date in \"{Name}\"");
+            Date = valueSet[DateTitle]?.ToDateTime() ?? throw new ArgumentNullException($"Empty date in \"{Name}\"");
 
-            Amount = values.ToDecimal(2) ?? throw new ArgumentNullException($"Empty amount in \"{Name}\"");
+            Amount = valueSet[AmountTitle]?.ToDecimal() ?? throw new ArgumentNullException($"Empty amount in \"{Name}\"");
 
-            Price = values.ToDecimal(3);
+            Price = valueSet[PriceTitle]?.ToDecimal();
 
-            PromoCode = values.ToString(4);
+            PromoCode = valueSet[PromoCodeTitle]?.ToString();
 
-            DigisellerProductId = values.ToInt(5);
+            DigisellerProductId = valueSet[DigisellerProductIdTitle]?.ToInt();
 
-            PayMethodInfo = values.ToPayMathod(6);
+            PayMethodInfo = valueSet.ContainsKey(PayMethodInfoTitle) ? valueSet[PayMethodInfoTitle]?.ToPayMathod() : null;
 
-            DigisellerSellId = values.ToInt(7);
+            DigisellerSellId = valueSet.ContainsKey(DigisellerSellIdTitle) ? valueSet[DigisellerSellIdTitle]?.ToInt() : null;
 
-            PayMasterPaymentId = values.ToInt(8);
+            PayMasterPaymentId =
+                valueSet.ContainsKey(PayMasterPaymentIdTitle) ? valueSet[PayMasterPaymentIdTitle]?.ToInt() : null;
 
-            TaxReceiptId = values.ToString(9);
+            TaxReceiptId = valueSet.ContainsKey(TaxReceiptIdTitle) ? valueSet[TaxReceiptIdTitle]?.ToString() : null;
         }
 
-        public IList<object> Save()
+        public IDictionary<string, object> Save()
         {
-            var result = new List<object>
+            var result = new Dictionary<string, object>
             {
-                Name,
-                $"{Date:d MMMM yyyy}",
-                $"{Amount}",
-                $"{Price}",
-                $"{PromoCode}",
-                $"{Utils.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId)}",
-                $"{PayMethodInfo}",
-                $"{Utils.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId)}",
-                $"{Utils.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId)}",
-                $"{Utils.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId)}",
-                $"{DigisellerFee}",
-                $"{PayMasterFee}",
-                $"{Tax}"
+                { NameTitle, Name },
+                { DateTitle, $"{Date:d MMMM yyyy}" },
+                { AmountTitle, Amount },
+                { PriceTitle, Price },
+                { PromoCodeTitle, PromoCode },
+                { DigisellerProductIdTitle, Utils.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId) },
+                { PayMethodInfoTitle, PayMethodInfo.ToString() },
+                { DigisellerSellIdTitle, Utils.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId) },
+                { PayMasterPaymentIdTitle, Utils.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId) },
+                { TaxReceiptIdTitle, Utils.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId) },
+                { DigisellerFeeTitle, DigisellerFee },
+                { PayMasterFeeTitle, PayMasterFee },
+                { TaxTitle, Tax }
             };
-            result.AddRange(Agents.Select(a => Shares.ContainsKey(a) ? $"{Shares[a]}" : ""));
+            foreach (string agent in Agents)
+            {
+                result[agent] = Shares.ContainsKey(agent) ? Shares[agent] : (decimal?) null;
+            }
 
             return result;
         }
+
+        private static readonly IList<string> Titles = new List<string>
+        {
+            NameTitle,
+            DateTitle,
+            AmountTitle,
+            PriceTitle,
+            PromoCodeTitle,
+            DigisellerProductIdTitle,
+            PayMethodInfoTitle,
+            DigisellerSellIdTitle,
+            PayMasterPaymentIdTitle,
+            TaxReceiptIdTitle,
+            DigisellerFeeTitle,
+            PayMasterFeeTitle,
+            TaxTitle
+        };
+
+        private const string NameTitle = "Комментарий";
+        private const string DateTitle = "Дата";
+        private const string AmountTitle = "Сумма";
+        private const string PriceTitle = "Цена";
+        private const string PromoCodeTitle = "Промокод";
+        private const string DigisellerProductIdTitle = "Товар";
+        private const string PayMethodInfoTitle = "Способ";
+        private const string DigisellerSellIdTitle = "Покупка";
+        private const string PayMasterPaymentIdTitle = "Поступление";
+        private const string TaxReceiptIdTitle = "Чек";
+        private const string DigisellerFeeTitle = "Digiseller";
+        private const string PayMasterFeeTitle = "Paymaster";
+        private const string TaxTitle = "Налог";
     }
 }

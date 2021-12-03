@@ -12,6 +12,9 @@ namespace Carespace.FinanceHelper.Console
         public string GoogleCustomRange { get; set; }
 
         [JsonProperty]
+        public string GoogleCustomRangeToClear { get; set; }
+
+        [JsonProperty]
         public string GoogleFinalRange { get; set; }
 
         [JsonProperty]

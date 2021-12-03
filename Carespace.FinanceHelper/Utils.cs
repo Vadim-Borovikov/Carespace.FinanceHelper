@@ -6,7 +6,6 @@ using Carespace.FinanceHelper.Dto.PayMaster;
 using Carespace.FinanceHelper.Dto.SelfWork;
 using Carespace.FinanceHelper.Providers;
 using TokenResult = Carespace.FinanceHelper.Dto.Digiseller.TokenResult;
-using GoogleSheetsManager;
 
 namespace Carespace.FinanceHelper
 {
@@ -14,12 +13,7 @@ namespace Carespace.FinanceHelper
     {
         #region Google
 
-        internal static Transaction.PayMethod? ToPayMathod(this IList<object> values, int index)
-        {
-            return values.To(index, ToPayMathod);
-        }
-
-        private static Transaction.PayMethod? ToPayMathod(object o)
+        internal static Transaction.PayMethod? ToPayMathod(this object o)
         {
             return Enum.TryParse(o?.ToString(), out Transaction.PayMethod p) ? (Transaction.PayMethod?)p : null;
         }
