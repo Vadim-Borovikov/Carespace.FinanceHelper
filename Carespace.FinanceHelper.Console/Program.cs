@@ -66,9 +66,9 @@ namespace Carespace.FinanceHelper.Console
             DateTime dateEnd = DateTime.Today.AddDays(1);
 
             List<int> productIds = config.Shares.Keys.Where(k => k != "None").Select(int.Parse).ToList();
-            IEnumerable<Transaction> newSells = Utils.GetNewDigisellerSells(config.DigisellerLogin,
-                config.DigisellerPassword, config.DigisellerId, productIds, dateStart, dateEnd,
-                config.DigisellerApiGuid, oldTransactions);
+            List<Transaction> newSells = await Utils.GetNewDigisellerSellsAsync(config.DigisellerLogin,
+                config.DigisellerPassword, config.DigisellerId, productIds, dateStart, dateEnd, config.DigisellerApiGuid,
+                oldTransactions);
 
             transactions.AddRange(newSells);
 
@@ -101,9 +101,8 @@ namespace Carespace.FinanceHelper.Console
 
             System.Console.Write("Register taxes... ");
 
-            Utils.RegisterTaxes(transactions, config.TaxUserAgent, config.TaxSourceDeviceId, config.TaxSourceType,
-                config.TaxAppVersion, config.TaxRefreshToken, config.TaxIncomeType, config.TaxPaymentType,
-                config.TaxProductNameFormat);
+            await Utils.RegisterTaxesAsync(transactions, config.TaxUserAgent, config.TaxSourceDeviceId, config.TaxSourceType,
+                config.TaxAppVersion, config.TaxRefreshToken, config.TaxProductNameFormat);
 
             System.Console.WriteLine("done.");
 

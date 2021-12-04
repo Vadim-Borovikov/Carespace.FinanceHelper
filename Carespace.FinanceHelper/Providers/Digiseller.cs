@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Carespace.FinanceHelper.Dto.Digiseller;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using SelfWork;
 
 namespace Carespace.FinanceHelper.Providers
 {
@@ -22,10 +24,11 @@ namespace Carespace.FinanceHelper.Providers
             return RestHelper.CallGetMethod<ProductResult>(ApiProvider, ProductsInfoMethod, parameters);
         }
 
-        public static SellsResult GetSells(int sellerId, List<int> productIds, string start, string end,
-            int page, string sellerSecret)
+        public static Task<SellsResult> GetSellsAsync(int sellerId, List<int> productIds, string start, string end, int page,
+            string sellerSecret)
         {
-            string sign = Hash($"{sellerId}{string.Join("", productIds)}{start}{end}{Returned}{page}{RowsPerPage}{sellerSecret}");
+            string sign =
+                Hash($"{sellerId}{string.Join("", productIds)}{start}{end}{Returned}{page}{RowsPerPage}{sellerSecret}");
             var dto = new SellsRequest
             {
                 SellerId = sellerId,
@@ -38,10 +41,10 @@ namespace Carespace.FinanceHelper.Providers
                 Sign = sign
             };
 
-            return RestHelper.CallPostMethod<SellsResult>(ApiProvider, GetSellsMethod, dto, Settings);
+            return RestHelper.CallPostMethodAsync<SellsResult>(ApiProvider, GetSellsMethod, dto, Settings);
         }
 
-        public static TokenResult GetToken(string login, string password, string sellerSecret)
+        public static Task<TokenResult> GetTokenAsync(string login, string password, string sellerSecret)
         {
             long timestamp = DateTime.Now.ToFileTime();
             string sign = Hash($"{password}{sellerSecret}{timestamp}");
@@ -52,7 +55,7 @@ namespace Carespace.FinanceHelper.Providers
                 Sign = sign
             };
 
-            return RestHelper.CallPostMethod<TokenResult>(ApiProvider, GetTokenMethod, dto, Settings);
+            return RestHelper.CallPostMethodAsync<TokenResult>(ApiProvider, GetTokenMethod, dto, Settings);
         }
 
         public static PurchaseResult GetPurchase(int invoiceId, string token)

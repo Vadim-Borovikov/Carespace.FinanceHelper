@@ -6,12 +6,6 @@ namespace Carespace.FinanceHelper.Tests
     internal sealed class Configuration
     {
         [JsonProperty]
-        public string TaxSourceDeviceId { get; set; }
-
-        [JsonProperty]
-        public string TaxRefreshToken { get; set; }
-
-        [JsonProperty]
         public decimal TaxFeePercent { get; set; }
 
         [JsonProperty]

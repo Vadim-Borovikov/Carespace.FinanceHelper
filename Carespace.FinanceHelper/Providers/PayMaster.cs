@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using Carespace.FinanceHelper.Dto.PayMaster;
+using SelfWork;
 
 namespace Carespace.FinanceHelper.Providers
 {

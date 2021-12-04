@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Carespace.FinanceHelper.Dto.Digiseller;
 using Carespace.FinanceHelper.Dto.PayMaster;
-using Carespace.FinanceHelper.Dto.SelfWork;
 using Carespace.FinanceHelper.Providers;
+using SelfWork;
+using SelfWork.Data;
 using TokenResult = Carespace.FinanceHelper.Dto.Digiseller.TokenResult;
 
 namespace Carespace.FinanceHelper
@@ -24,9 +26,8 @@ namespace Carespace.FinanceHelper
 
         #region SelfWork
 
-        public static void RegisterTaxes(IEnumerable<Transaction> transactions, string userAgent,
-            string sourceDeviceId, string sourceType, string appVersion, string refreshToken, string incomeType,
-            string paymentType, string nameFormat)
+        public static async Task RegisterTaxesAsync(IEnumerable<Transaction> transactions, string userAgent,
+            string sourceDeviceId, string sourceType, string appVersion, string refreshToken, string nameFormat)
         {
             string token = null;
             foreach (Transaction t in transactions.Where(t => t.Price.HasValue
@@ -34,30 +35,17 @@ namespace Carespace.FinanceHelper
             {
                 if (token == null)
                 {
-                    token = GetTaxToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
+                    token = await DataManager.GetTokenAsync(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
                 }
 
-                var service = new IncomeRequest.Service
-                {
-                    // ReSharper disable once PossibleInvalidOperationException
-                    Amount = t.Price.Value,
-                    Name = GetTaxName(t, nameFormat),
-                    Quantity = 1
-                };
-                var services = new List<IncomeRequest.Service> { service };
+                string name = GetTaxName(t, nameFormat);
+                // ReSharper disable once PossibleInvalidOperationException
+                decimal amount = t.Price.Value;
 
-                IncomeResult result =
-                    SelfWork.PostIncome(incomeType, t.Date, DateTime.Now, services, t.Price.Value, paymentType, token);
+                IncomeResult result = await DataManager.PostIncomeFromIndividualAsync(name, amount, token, t.Date);
 
                 t.TaxReceiptId = result.ApprovedReceiptUuid;
             }
-        }
-
-        public static string GetTaxToken(string userAgent, string sourceDeviceId, string sourceType,
-            string appVersion, string refreshToken)
-        {
-            Dto.SelfWork.TokenResult result = SelfWork.GetToken(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
-            return result.Token;
         }
 
         #endregion // SelfWork
@@ -66,12 +54,12 @@ namespace Carespace.FinanceHelper
 
         #region Digiseller
 
-        public static IEnumerable<Transaction> GetNewDigisellerSells(string login, string password, int sellerId,
+        public static async Task<List<Transaction>> GetNewDigisellerSellsAsync(string login, string password, int sellerId,
             List<int> productIds, DateTime dateStart, DateTime dateFinish, string sellerSecret,
             IEnumerable<Transaction> oldTransactions)
         {
-            IEnumerable<SellsResult.Sell> sells =
-                GetDigisellerSells(sellerId, productIds, dateStart, dateFinish, sellerSecret);
+            List<SellsResult.Sell> sells =
+                await GetDigisellerSellsAsync(sellerId, productIds, dateStart, dateFinish, sellerSecret);
 
             IEnumerable<int> oldSellIds = oldTransactions
                 .Where(t => t.DigisellerSellId.HasValue)
@@ -79,32 +67,27 @@ namespace Carespace.FinanceHelper
 
             IEnumerable<SellsResult.Sell> newSells = sells.Where(s => !oldSellIds.Contains(s.InvoiceId));
 
-            string token = GetToken(login, password, sellerSecret);
+            string token = await GetTokenAsync(login, password, sellerSecret);
 
-            foreach (SellsResult.Sell sell in newSells)
-            {
-                string promoCode = GetPromoCode(sell.InvoiceId, token);
-                yield return CreateTransaction(sell, promoCode);
-            }
+            return newSells.Select(s => CreateTransaction(s, token)).ToList();
         }
 
-        private static IEnumerable<SellsResult.Sell> GetDigisellerSells(int sellerId, List<int> productIds,
+        private static async Task<List<SellsResult.Sell>> GetDigisellerSellsAsync(int sellerId, List<int> productIds,
             DateTime dateStat, DateTime dateFinish, string sellerSecret)
         {
             string start = dateStat.ToString(GoogleDateTimeFormat);
             string end = dateFinish.ToString(GoogleDateTimeFormat);
             int page = 1;
             int totalPages;
+            var sells = new List<SellsResult.Sell>();
             do
             {
-                SellsResult dto = Digiseller.GetSells(sellerId, productIds, start, end, page, sellerSecret);
-                foreach (SellsResult.Sell sell in dto.Sells)
-                {
-                    yield return sell;
-                }
+                SellsResult dto = await Digiseller.GetSellsAsync(sellerId, productIds, start, end, page, sellerSecret);
+                sells.AddRange(dto.Sells);
                 ++page;
                 totalPages = dto.Pages;
             } while (page <= totalPages);
+            return sells;
         }
 
         private static string GetTaxName(Transaction transaction, string taxNameFormat)
@@ -119,8 +102,10 @@ namespace Carespace.FinanceHelper
             return string.Format(taxNameFormat, productName);
         }
 
-        private static Transaction CreateTransaction(SellsResult.Sell sell, string promoCode)
+        private static Transaction CreateTransaction(SellsResult.Sell sell, string token)
         {
+            string promoCode = GetPromoCode(sell.InvoiceId, token);
+
             Transaction.PayMethod payMethod;
             switch (sell.PayMethodInfo)
             {
@@ -133,12 +118,13 @@ namespace Carespace.FinanceHelper
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId, payMethod, promoCode);
+            return new Transaction(sell.ProductName, sell.DatePay, sell.AmountIn, sell.InvoiceId, sell.ProductId, payMethod,
+                promoCode);
         }
 
-        private static string GetToken(string login, string password, string sellerSecret)
+        private static async Task<string> GetTokenAsync(string login, string password, string sellerSecret)
         {
-            TokenResult result = Digiseller.GetToken(login, password, sellerSecret);
+            TokenResult result = await Digiseller.GetTokenAsync(login, password, sellerSecret);
             return result.Token;
         }
 
