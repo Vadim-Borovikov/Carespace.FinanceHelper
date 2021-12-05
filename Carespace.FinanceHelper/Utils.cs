@@ -6,7 +6,6 @@ using Carespace.FinanceHelper.Dto.Digiseller;
 using Carespace.FinanceHelper.Dto.PayMaster;
 using Carespace.FinanceHelper.Providers;
 using SelfWork;
-using SelfWork.Data;
 using TokenResult = Carespace.FinanceHelper.Dto.Digiseller.TokenResult;
 
 namespace Carespace.FinanceHelper
@@ -42,9 +41,7 @@ namespace Carespace.FinanceHelper
                 // ReSharper disable once PossibleInvalidOperationException
                 decimal amount = t.Price.Value;
 
-                IncomeResult result = await DataManager.PostIncomeFromIndividualAsync(name, amount, token, t.Date);
-
-                t.TaxReceiptId = result.ApprovedReceiptUuid;
+                t.TaxReceiptId = await DataManager.PostIncomeFromIndividualAsync(name, amount, token, t.Date);
             }
         }
 
@@ -265,12 +262,19 @@ namespace Carespace.FinanceHelper
 
         internal static string GetHyperlink(string urlFormat, object parameter)
         {
-            if (string.IsNullOrWhiteSpace(parameter?.ToString()))
+            string caption = parameter?.ToString();
+            if (string.IsNullOrWhiteSpace(caption))
             {
                 return null;
             }
-            string url = string.Format(urlFormat, parameter);
-            return string.Format(HyperlinkFormat, url, parameter);
+            string url = string.Format(urlFormat, caption);
+            var uri = new Uri(url);
+            return GetHyperlink(uri, caption);
+        }
+
+        internal static string GetHyperlink(Uri uri, string caption)
+        {
+            return string.Format(HyperlinkFormat, uri.AbsoluteUri, caption);
         }
 
         private static decimal Round(decimal d) => Math.Round(d, 2);

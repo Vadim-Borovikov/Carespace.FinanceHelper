@@ -17,8 +17,9 @@ namespace Carespace.FinanceHelper
         // Common URL formats
         public static string DigisellerSellUrlFormat;
         public static string DigisellerProductUrlFormat;
-        public static string TaxReceiptUrlFormat;
         public static string PayMasterPaymentUrlFormat;
+
+        public static long TaxPayerId;
 
         public static List<string> Agents;
 
@@ -92,6 +93,7 @@ namespace Carespace.FinanceHelper
 
         public IDictionary<string, object> Save()
         {
+            Uri taxReceiptUri = SelfWork.DataManager.GetReceiptUri(TaxPayerId, TaxReceiptId);
             var result = new Dictionary<string, object>
             {
                 { NameTitle, Name },
@@ -103,7 +105,7 @@ namespace Carespace.FinanceHelper
                 { PayMethodInfoTitle, PayMethodInfo.ToString() },
                 { DigisellerSellIdTitle, Utils.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId) },
                 { PayMasterPaymentIdTitle, Utils.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId) },
-                { TaxReceiptIdTitle, Utils.GetHyperlink(TaxReceiptUrlFormat, TaxReceiptId) },
+                { TaxReceiptIdTitle, Utils.GetHyperlink(taxReceiptUri, TaxReceiptId) },
                 { DigisellerFeeTitle, DigisellerFee },
                 { PayMasterFeeTitle, PayMasterFee },
                 { TaxTitle, Tax }

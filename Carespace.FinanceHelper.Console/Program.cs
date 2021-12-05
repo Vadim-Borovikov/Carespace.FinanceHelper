@@ -22,8 +22,9 @@ namespace Carespace.FinanceHelper.Console
 
             Transaction.DigisellerSellUrlFormat = config.DigisellerSellUrlFormat;
             Transaction.DigisellerProductUrlFormat = config.DigisellerProductUrlFormat;
-            Transaction.TaxReceiptUrlFormat = config.TaxReceiptUrlFormat;
             Transaction.PayMasterPaymentUrlFormat = config.PayMasterPaymentUrlFormat;
+
+            Transaction.TaxPayerId = config.TaxPayerId;
 
             Transaction.Agents = config.Shares.Values
                 .SelectMany(s => s)

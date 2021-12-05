@@ -56,16 +56,13 @@ namespace Carespace.FinanceHelper.Console
         public string TaxRefreshToken { get; set; }
 
         [JsonProperty]
-        public string TaxIncomeType { get; set; }
-
-        [JsonProperty]
         public string TaxPaymentType { get; set; }
 
         [JsonProperty]
         public string TaxProductNameFormat { get; set; }
 
         [JsonProperty]
-        public string TaxReceiptUrlFormat { get; set; }
+        public long TaxPayerId { get; set; }
 
 
         [JsonProperty]
