@@ -118,7 +118,7 @@ namespace Carespace.FinanceHelper
             return result;
         }
 
-        private static readonly IList<string> Titles = new List<string>
+        public static readonly List<string> Titles = new List<string>
         {
             NameTitle,
             DateTitle,

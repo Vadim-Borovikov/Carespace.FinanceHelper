@@ -33,6 +33,8 @@ namespace Carespace.FinanceHelper.Console
                 .OrderBy(s => s)
                 .ToList();
 
+            Transaction.Titles.AddRange(Transaction.Agents);
+
             System.Console.Write("Loading google transactions... ");
 
             using (var provider = new SheetsProvider(config.GoogleCredentialJson, ApplicationName, config.GoogleSheetId))
