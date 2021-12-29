@@ -87,7 +87,9 @@ namespace Carespace.FinanceHelper.Console
 
             System.Console.WriteLine("done.");
 
-            Utils.CalculateTotals(donations, config.PayMasterFeePercents);
+            DateTime firstThursday = Utils.GetNextThursday(donations.Min(d => d.Date));
+
+            Utils.CalculateTotalsAndWeeks(donations, config.PayMasterFeePercents, firstThursday);
 
             System.Console.Write("> Writing donations to google... ");
 
@@ -95,6 +97,18 @@ namespace Carespace.FinanceHelper.Console
                 donations.OrderByDescending(d => d.Date).ToList());
 
             System.Console.WriteLine("done.");
+
+            System.Console.Write("> Calculating and writing donations sums to google... ");
+
+            List<DonationsSum> sums = donations.GroupBy(d => d.Week)
+                                               .Select(g => new DonationsSum(firstThursday, g.Key, g.Sum(d => d.Total)))
+                                               .ToList();
+
+            await DataManager.UpdateValuesAsync(provider, config.GoogleDonationSumsRange,
+                sums.OrderByDescending(s => s.Date).ToList());
+
+            System.Console.WriteLine("done.");
+
         }
 
         private static async Task LoadGoogleTransactionsAsync(SheetsProvider provider, Config config)

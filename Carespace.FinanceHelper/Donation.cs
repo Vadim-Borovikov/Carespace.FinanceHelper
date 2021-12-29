@@ -10,11 +10,12 @@ namespace Carespace.FinanceHelper
         IList<string> ISavable.Titles => Titles;
 
         public DateTime Date { get; private set; }
+        public ushort Week { get; internal set; }
+        public decimal Total { get; internal set; }
 
-        internal int PaymentId { get; private set; }
         internal decimal Amount { get; private set; }
+        internal int PaymentId { get; private set; }
         internal Transaction.PayMethod? PayMethodInfo { get; private set; }
-        internal decimal Total { private get; set; }
 
         private string _name;
 
@@ -53,6 +54,8 @@ namespace Carespace.FinanceHelper
 
             PayMethodInfo = valueSet.ContainsKey(PayMethodInfoTitle) ? valueSet[PayMethodInfoTitle]?.ToPayMathod() : null;
 
+            Week = valueSet[WeekTitle]?.ToUshort() ?? throw new ArgumentNullException($"Empty week in ${PaymentId}");
+
             Total = valueSet[TotalTitle]?.ToDecimal() ?? throw new ArgumentNullException($"Empty total in ${PaymentId}");
         }
 
@@ -65,7 +68,8 @@ namespace Carespace.FinanceHelper
                 { AmountTitle, Amount },
                 { PayMethodInfoTitle, PayMethodInfo.ToString() },
                 { PaymentIdTitle, Utils.GetPayMasterHyperlink(PaymentId) },
-                { TotalTitle, Total }
+                { TotalTitle, Total },
+                { WeekTitle, Week }
             };
         }
 
@@ -76,7 +80,8 @@ namespace Carespace.FinanceHelper
             AmountTitle,
             PayMethodInfoTitle,
             PaymentIdTitle,
-            TotalTitle
+            TotalTitle,
+            WeekTitle
         };
 
         private const string NameTitle = "От кого";
@@ -85,5 +90,6 @@ namespace Carespace.FinanceHelper
         private const string PayMethodInfoTitle = "Способ";
         private const string PaymentIdTitle = "Поступление";
         private const string TotalTitle = "Итого";
+        private const string WeekTitle = "Неделя";
     }
 }

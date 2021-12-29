@@ -224,8 +224,8 @@ namespace Carespace.FinanceHelper
             return new DateTime(Math.Min(dateTime1.Ticks, dataTime2.Ticks));
         }
 
-        public static void CalculateTotals(IEnumerable<Donation> donations,
-            Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents)
+        public static void CalculateTotalsAndWeeks(IEnumerable<Donation> donations,
+            Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents, DateTime firstThursday)
         {
             foreach (Donation donation in donations)
             {
@@ -235,6 +235,8 @@ namespace Carespace.FinanceHelper
                 }
                 decimal payMasterFee = Round(donation.Amount * payMasterFeePercents[donation.PayMethodInfo.Value]);
                 donation.Total = donation.Amount - payMasterFee;
+
+                donation.Week = (ushort) Math.Ceiling((donation.Date - firstThursday).TotalDays / 7);
             }
         }
 
@@ -319,6 +321,12 @@ namespace Carespace.FinanceHelper
             int postfixLenght = format.Length - right - 1;
 
             return value.Substring(prefixLength, value.Length - prefixLength - postfixLenght);
+        }
+
+        public static DateTime GetNextThursday(DateTime date)
+        {
+            int diff = (7 + DayOfWeek.Thursday - date.DayOfWeek) % 7;
+            return date.AddDays(diff);
         }
 
         internal static string GetHyperlink(string urlFormat, object parameter)

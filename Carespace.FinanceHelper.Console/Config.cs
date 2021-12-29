@@ -15,6 +15,9 @@ namespace Carespace.FinanceHelper.Console
         public string GoogleDonationsRange { get; set; }
 
         [JsonProperty]
+        public string GoogleDonationSumsRange { get; set; }
+
+        [JsonProperty]
         public string GoogleCustomRange { get; set; }
 
         [JsonProperty]
