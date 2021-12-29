@@ -92,7 +92,7 @@ namespace Carespace.FinanceHelper.Console
                 dateStart = needPayment.Select(o => o.Date).Min();
                 dateEnd = needPayment.Select(o => o.Date).Max().AddDays(1);
                 List<ListPaymentsFilterResult.Response.Payment> payments =
-                    Utils.GetPayments(dateStart, dateEnd, config.PayMasterLogin, config.PayMasterPassword);
+                    await Utils.GetPaymentsAsync(dateStart, dateEnd, config.PayMasterLogin, config.PayMasterPassword);
 
                 foreach (Transaction transaction in needPayment)
                 {

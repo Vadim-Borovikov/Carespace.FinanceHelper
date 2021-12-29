@@ -12,7 +12,7 @@ namespace Carespace.FinanceHelper.Providers
 {
     internal static class Digiseller
     {
-        public static ProductResult GetProductsInfo(int productId)
+        public static Task<ProductResult> GetProductsInfoAsync(int productId)
         {
             var parameters = new Dictionary<string, object>
             {
@@ -21,7 +21,7 @@ namespace Carespace.FinanceHelper.Providers
                 ["product_id"] = productId
             };
 
-            return RestHelper.CallGetMethod<ProductResult>(ApiProvider, ProductsInfoMethod, parameters);
+            return RestHelper.CallGetMethodAsync<ProductResult>(ApiProvider, ProductsInfoMethod, parameters);
         }
 
         public static Task<SellsResult> GetSellsAsync(int sellerId, List<int> productIds, string start, string end, int page,
@@ -58,11 +58,11 @@ namespace Carespace.FinanceHelper.Providers
             return RestHelper.CallPostMethodAsync<TokenResult>(ApiProvider, GetTokenMethod, dto, Settings);
         }
 
-        public static PurchaseResult GetPurchase(int invoiceId, string token)
+        public static Task<PurchaseResult> GetPurchaseAsync(int invoiceId, string token)
         {
             var parameters = new Dictionary<string, object> { ["token"] = token };
 
-            return RestHelper.CallGetMethod<PurchaseResult>(ApiProvider, $"{GetPurchaseMethod}{invoiceId}", parameters);
+            return RestHelper.CallGetMethodAsync<PurchaseResult>(ApiProvider, $"{GetPurchaseMethod}{invoiceId}", parameters);
         }
 
         private static string Hash(string input)

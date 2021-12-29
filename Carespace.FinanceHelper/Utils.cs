@@ -37,7 +37,7 @@ namespace Carespace.FinanceHelper
                     token = await DataManager.GetTokenAsync(userAgent, sourceDeviceId, sourceType, appVersion, refreshToken);
                 }
 
-                string name = GetTaxName(t, nameFormat);
+                string name = await GetTaxNameAsync(t, nameFormat);
                 // ReSharper disable once PossibleInvalidOperationException
                 decimal amount = t.Price.Value;
 
@@ -66,7 +66,13 @@ namespace Carespace.FinanceHelper
 
             string token = await GetTokenAsync(login, password, sellerSecret);
 
-            return newSells.Select(s => CreateTransaction(s, token)).ToList();
+            var transactions = new List<Transaction>();
+            foreach (SellsResult.Sell sell in newSells)
+            {
+                Transaction transaction = await CreateTransactionAsync(sell, token);
+                transactions.Add(transaction);
+            }
+            return transactions;
         }
 
         private static async Task<List<SellsResult.Sell>> GetDigisellerSellsAsync(int sellerId, List<int> productIds,
@@ -87,21 +93,21 @@ namespace Carespace.FinanceHelper
             return sells;
         }
 
-        private static string GetTaxName(Transaction transaction, string taxNameFormat)
+        private static async Task<string> GetTaxNameAsync(Transaction transaction, string taxNameFormat)
         {
             if (!transaction.DigisellerProductId.HasValue)
             {
                 return transaction.Name;
             }
 
-            ProductResult info = Digiseller.GetProductsInfo(transaction.DigisellerProductId.Value);
+            ProductResult info = await Digiseller.GetProductsInfoAsync(transaction.DigisellerProductId.Value);
             string productName = info.Info.Name;
             return string.Format(taxNameFormat, productName);
         }
 
-        private static Transaction CreateTransaction(SellsResult.Sell sell, string token)
+        private static async Task<Transaction> CreateTransactionAsync(SellsResult.Sell sell, string token)
         {
-            string promoCode = GetPromoCode(sell.InvoiceId, token);
+            string promoCode = await GetPromoCodeAsync(sell.InvoiceId, token);
 
             Transaction.PayMethod payMethod;
             switch (sell.PayMethodInfo)
@@ -125,9 +131,9 @@ namespace Carespace.FinanceHelper
             return result.Token;
         }
 
-        private static string GetPromoCode(int invoiceId, string token)
+        private static async Task<string> GetPromoCodeAsync(int invoiceId, string token)
         {
-            PurchaseResult result = Digiseller.GetPurchase(invoiceId, token);
+            PurchaseResult result = await Digiseller.GetPurchaseAsync(invoiceId, token);
             return result.Info.PromoCode;
         }
 
@@ -139,14 +145,14 @@ namespace Carespace.FinanceHelper
 
         #region PayMaster
 
-        public static List<ListPaymentsFilterResult.Response.Payment> GetPayments(DateTime periodFrom,
+        public static async Task<List<ListPaymentsFilterResult.Response.Payment>> GetPaymentsAsync(DateTime periodFrom,
             DateTime periodTo, string login, string password)
         {
             string start = periodFrom.ToString(PayMasterDateTimeFormat);
             string end = periodTo.ToString(PayMasterDateTimeFormat);
 
             ListPaymentsFilterResult result =
-                PayMaster.GetPayments(login, password, "", "", start, end, "", PayMasterState);
+                await PayMaster.GetPaymentsAsync(login, password, "", "", start, end, "", PayMasterState);
 
             return result.ResponseInfo.Payments;
         }

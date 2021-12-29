@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Carespace.FinanceHelper.Dto.PayMaster;
 using SelfWork;
 
@@ -9,7 +10,7 @@ namespace Carespace.FinanceHelper.Providers
 {
     internal static class PayMaster
     {
-        public static ListPaymentsFilterResult GetPayments(string login, string password, string accountId,
+        public static Task<ListPaymentsFilterResult> GetPaymentsAsync(string login, string password, string accountId,
             string siteAlias, string periodFrom, string periodTo, string invoiceId, string state)
         {
             string nounce = GenerateNounce();
@@ -26,7 +27,7 @@ namespace Carespace.FinanceHelper.Providers
                 ["state"] = state
             };
 
-            return RestHelper.CallGetMethod<ListPaymentsFilterResult>(ApiProvider, GetPaymentsMethod, parameters);
+            return RestHelper.CallGetMethodAsync<ListPaymentsFilterResult>(ApiProvider, GetPaymentsMethod, parameters);
         }
 
         private static string GenerateNounce()
