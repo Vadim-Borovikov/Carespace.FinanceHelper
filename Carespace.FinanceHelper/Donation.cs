@@ -14,7 +14,7 @@ namespace Carespace.FinanceHelper
         public decimal Total { get; internal set; }
 
         internal decimal Amount { get; private set; }
-        internal int PaymentId { get; private set; }
+        internal int? PaymentId { get; private set; }
         internal Transaction.PayMethod? PayMethodInfo { get; private set; }
 
         private string _name;
@@ -44,19 +44,15 @@ namespace Carespace.FinanceHelper
 
         public void Load(IDictionary<string, object> valueSet)
         {
-            PaymentId = valueSet[PaymentIdTitle]?.ToInt() ?? throw new ArgumentNullException("Empty id");
+            PaymentId = valueSet.ContainsKey(PaymentIdTitle) ? valueSet[PaymentIdTitle]?.ToInt() : null;
 
             _name = valueSet[NameTitle]?.ToString();
 
-            Date = valueSet[DateTitle]?.ToDateTime() ?? throw new ArgumentNullException($"Empty date in ${PaymentId}");
+            Date = valueSet[DateTitle]?.ToDateTime() ?? throw new ArgumentNullException("Empty date");
 
-            Amount = valueSet[AmountTitle]?.ToDecimal() ?? throw new ArgumentNullException($"Empty amount in ${PaymentId}");
+            Amount = valueSet[AmountTitle]?.ToDecimal() ?? throw new ArgumentNullException("Empty amount");
 
             PayMethodInfo = valueSet.ContainsKey(PayMethodInfoTitle) ? valueSet[PayMethodInfoTitle]?.ToPayMathod() : null;
-
-            Week = valueSet[WeekTitle]?.ToUshort() ?? throw new ArgumentNullException($"Empty week in ${PaymentId}");
-
-            Total = valueSet[TotalTitle]?.ToDecimal() ?? throw new ArgumentNullException($"Empty total in ${PaymentId}");
         }
 
         public IDictionary<string, object> Save()
@@ -66,8 +62,8 @@ namespace Carespace.FinanceHelper
                 { NameTitle, _name ?? "" },
                 { DateTitle, $"{Date:d MMMM yyyy}" },
                 { AmountTitle, Amount },
-                { PayMethodInfoTitle, PayMethodInfo.ToString() },
-                { PaymentIdTitle, Utils.GetPayMasterHyperlink(PaymentId) },
+                { PayMethodInfoTitle, PayMethodInfo?.ToString() ?? "" },
+                { PaymentIdTitle, Utils.GetPayMasterHyperlink(PaymentId) ?? "" },
                 { TotalTitle, Total },
                 { WeekTitle, Week }
             };

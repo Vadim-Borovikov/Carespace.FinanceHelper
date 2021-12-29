@@ -152,7 +152,7 @@ namespace Carespace.FinanceHelper
                 await GetPaymentsAsync(siteAlias, start, end, login, password);
             List<ListPaymentsFilterResult.Response.Payment> payments = allPayments.Where(p => !p.IsTestPayment).ToList();
 
-            IEnumerable<int> oldPaymentIds = oldPayments.Select(p => p.PaymentId);
+            IEnumerable<int?> oldPaymentIds = oldPayments.Select(p => p.PaymentId);
 
             IEnumerable<ListPaymentsFilterResult.Response.Payment> newPayments =
                 payments.Where(p => !oldPaymentIds.Contains(p.PaymentId));
@@ -229,11 +229,11 @@ namespace Carespace.FinanceHelper
         {
             foreach (Donation donation in donations)
             {
-                if (!donation.PayMethodInfo.HasValue)
+                decimal payMasterFee = 0;
+                if (donation.PayMethodInfo.HasValue)
                 {
-                    throw new ArgumentNullException();
+                    payMasterFee = Round(donation.Amount * payMasterFeePercents[donation.PayMethodInfo.Value]);
                 }
-                decimal payMasterFee = Round(donation.Amount * payMasterFeePercents[donation.PayMethodInfo.Value]);
                 donation.Total = donation.Amount - payMasterFee;
 
                 donation.Week = (ushort) Math.Ceiling((donation.Date - firstThursday).TotalDays / 7);

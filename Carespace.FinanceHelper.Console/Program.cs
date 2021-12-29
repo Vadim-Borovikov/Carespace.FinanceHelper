@@ -73,6 +73,13 @@ namespace Carespace.FinanceHelper.Console
             IList<Donation> oldDonations = await DataManager.GetValuesAsync<Donation>(provider, config.GoogleDonationsRange);
             donations.AddRange(oldDonations);
 
+            IList<Donation> newCustomDonations =
+                await DataManager.GetValuesAsync<Donation>(provider, config.GoogleDonationsCustomRange);
+            if (newCustomDonations != null)
+            {
+                donations.AddRange(newCustomDonations);
+            }
+
             System.Console.WriteLine("done.");
 
             System.Console.Write("> Aquiring payments... ");
@@ -95,6 +102,7 @@ namespace Carespace.FinanceHelper.Console
 
             await DataManager.UpdateValuesAsync(provider, config.GoogleDonationsRange,
                 donations.OrderByDescending(d => d.Date).ToList());
+            await provider.ClearValuesAsync(config.GoogleDonationsCustomRangeToClear);
 
             System.Console.WriteLine("done.");
 
