@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Carespace.FinanceHelper.Dto.PayMaster
@@ -14,6 +15,21 @@ namespace Carespace.FinanceHelper.Dto.PayMaster
 
                 [JsonProperty]
                 public string Purpose { get; set; }
+
+                [JsonProperty]
+                public int PaymentSystemId { get; set; }
+
+                [JsonProperty]
+                public decimal PaymentAmount { get; set; }
+
+                [JsonProperty]
+                public DateTime LastUpdateTime { get; set; }
+
+                [JsonProperty]
+                public string SiteInvoiceId { get; set; }
+
+                [JsonProperty]
+                public bool IsTestPayment { get; set; }
             }
 
             [JsonProperty]

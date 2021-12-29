@@ -17,7 +17,6 @@ namespace Carespace.FinanceHelper
         // Common URL formats
         public static string DigisellerSellUrlFormat;
         public static string DigisellerProductUrlFormat;
-        public static string PayMasterPaymentUrlFormat;
 
         public static long TaxPayerId;
 
@@ -104,7 +103,7 @@ namespace Carespace.FinanceHelper
                 { DigisellerProductIdTitle, Utils.GetHyperlink(DigisellerProductUrlFormat, DigisellerProductId) },
                 { PayMethodInfoTitle, PayMethodInfo.ToString() },
                 { DigisellerSellIdTitle, Utils.GetHyperlink(DigisellerSellUrlFormat, DigisellerSellId) },
-                { PayMasterPaymentIdTitle, Utils.GetHyperlink(PayMasterPaymentUrlFormat, PayMasterPaymentId) },
+                { PayMasterPaymentIdTitle, Utils.GetPayMasterHyperlink(PayMasterPaymentId) },
                 { TaxReceiptIdTitle, Utils.GetHyperlink(taxReceiptUri, TaxReceiptId) },
                 { DigisellerFeeTitle, DigisellerFee },
                 { PayMasterFeeTitle, PayMasterFee },

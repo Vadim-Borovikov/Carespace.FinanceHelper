@@ -9,6 +9,12 @@ namespace Carespace.FinanceHelper.Console
         public string GoogleSheetId { get; set; }
 
         [JsonProperty]
+        public string GoogleSheetIdDonations { get; set; }
+
+        [JsonProperty]
+        public string GoogleDonationsRange { get; set; }
+
+        [JsonProperty]
         public string GoogleCustomRange { get; set; }
 
         [JsonProperty]
@@ -87,8 +93,16 @@ namespace Carespace.FinanceHelper.Console
         [JsonProperty]
         public Dictionary<Transaction.PayMethod, decimal> PayMasterFeePercents { get; set; }
 
-
         [JsonProperty]
         public Dictionary<string, List<Share>> Shares { get; set; }
+
+        [JsonProperty]
+        public int DonationsSiteId { get; set; }
+
+        [JsonProperty]
+        public string PaymasterSiteAliasDigiseller { get; set; }
+
+        [JsonProperty]
+        public string PaymasterSiteAliasDonations { get; set; }
     }
 }

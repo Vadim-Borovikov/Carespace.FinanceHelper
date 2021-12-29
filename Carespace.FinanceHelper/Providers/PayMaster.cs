@@ -22,6 +22,7 @@ namespace Carespace.FinanceHelper.Providers
                 ["login"] = login,
                 ["nonce"] = nounce,
                 ["hash"] = hash,
+                ["siteAlias"] = siteAlias,
                 ["periodFrom"] = periodFrom,
                 ["periodTo"] = periodTo,
                 ["state"] = state

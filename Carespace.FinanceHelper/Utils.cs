@@ -145,14 +145,50 @@ namespace Carespace.FinanceHelper
 
         #region PayMaster
 
-        public static async Task<List<ListPaymentsFilterResult.Response.Payment>> GetPaymentsAsync(DateTime periodFrom,
-            DateTime periodTo, string login, string password)
+        public static async Task<List<Donation>> GetNewPayMasterPaymentsAsync(string siteAlias, DateTime start, DateTime end,
+            string login, string password, IEnumerable<Donation> oldPayments)
+        {
+            List<ListPaymentsFilterResult.Response.Payment> allPayments =
+                await GetPaymentsAsync(siteAlias, start, end, login, password);
+            List<ListPaymentsFilterResult.Response.Payment> payments = allPayments.Where(p => !p.IsTestPayment).ToList();
+
+            IEnumerable<int> oldPaymentIds = oldPayments.Select(p => p.PaymentId);
+
+            IEnumerable<ListPaymentsFilterResult.Response.Payment> newPayments =
+                payments.Where(p => !oldPaymentIds.Contains(p.PaymentId));
+
+            return newPayments.Select(p => new Donation(p)).ToList();
+        }
+
+        internal static string GetPayMasterHyperlink(int? paymentId) => GetHyperlink(PayMasterPaymentUrlFormat, paymentId);
+
+        public static async Task<List<ListPaymentsFilterResult.Response.Payment>> GetPaymentsAsync(string siteAlias,
+            DateTime start, DateTime end, string login, string password)
+        {
+            var result = new List<ListPaymentsFilterResult.Response.Payment>();
+            DateTime periodFrom = start;
+            while (periodFrom < end)
+            {
+                DateTime periodTo = Min(periodFrom + PayMasterMaxRequestPeriod, end);
+
+                List<ListPaymentsFilterResult.Response.Payment> payments =
+                    await GetPaymentsLimitedAsync(siteAlias, periodFrom, periodTo, login, password);
+                result.AddRange(payments);
+
+                periodFrom = periodTo.AddDays(1);
+            }
+
+            return result;
+        }
+
+        private static async Task<List<ListPaymentsFilterResult.Response.Payment>> GetPaymentsLimitedAsync(string siteAlias,
+            DateTime periodFrom, DateTime periodTo, string login, string password)
         {
             string start = periodFrom.ToString(PayMasterDateTimeFormat);
             string end = periodTo.ToString(PayMasterDateTimeFormat);
 
             ListPaymentsFilterResult result =
-                await PayMaster.GetPaymentsAsync(login, password, "", "", start, end, "", PayMasterState);
+                await PayMaster.GetPaymentsAsync(login, password, "", siteAlias, start, end, "", PayMasterState);
 
             return result.ResponseInfo.Payments;
         }
@@ -182,6 +218,25 @@ namespace Carespace.FinanceHelper
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Common
+
+        private static DateTime Min(DateTime dateTime1, DateTime dataTime2)
+        {
+            return new DateTime(Math.Min(dateTime1.Ticks, dataTime2.Ticks));
+        }
+
+        public static void CalculateTotals(IEnumerable<Donation> donations,
+            Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents)
+        {
+            foreach (Donation donation in donations)
+            {
+                if (!donation.PayMethodInfo.HasValue)
+                {
+                    throw new ArgumentNullException();
+                }
+                decimal payMasterFee = Round(donation.Amount * payMasterFeePercents[donation.PayMethodInfo.Value]);
+                donation.Total = donation.Amount - payMasterFee;
+            }
+        }
 
         public static void CalculateShares(IEnumerable<Transaction> transactions, decimal taxFeePercent,
             decimal digisellerFeePercent, Dictionary<Transaction.PayMethod, decimal> payMasterFeePercents,
@@ -287,6 +342,10 @@ namespace Carespace.FinanceHelper
 
         private const string HyperlinkFormat = "=HYPERLINK(\"{0}\";\"{1}\")";
         private const string NoProductSharesKey = "None";
+
+        public static string PayMasterPaymentUrlFormat;
+
+        private static readonly TimeSpan PayMasterMaxRequestPeriod = TimeSpan.FromDays(179);
 
         #endregion // Common
     }
